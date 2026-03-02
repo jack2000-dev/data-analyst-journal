@@ -5,7 +5,7 @@ This is my data analyst journal to record my learning process and insights from 
 
 # Useful Links
 - ⭐ [awesom-data-analysis](https://github.com/PavelGrigoryevDS/awesome-data-analysis)
-- [Kaggle](https://www.kaggle.com/jackwp)
+- [My Kaggle profile](https://www.kaggle.com/jackwp)
 - [Data community](https://towardsdatascience.com/)
 - [Data analyst roadmap](https://github.com/mtahiraslan/data-analyst-roadmap)
 # Techstacks
@@ -66,20 +66,21 @@ The Google Data Analytics Certificate course consists of 9 courses to earn certi
 8. Google Data Analytics Capstone: Complete a Case Study
 9. Accelerate Your Job Search with AI
 
-| Day | Course                                                              | Progress                                                                                                                                                   |
-| --- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Course 1: Foundations: Data, Data, Everywhere (Module 1, 2)         | - Process of data analysis<br>- Type of data<br>- Data life cycle                                                                                          |
-| 2   | Course 1: Foundations: Data, Data, Everywhere (Module 3)            | - Spreadsheets intro<br>- SQL intro<br>- R intro<br>- Data visualization<br>- Tableau intro<br>- Data fairness                                             |
-| 3   | Course 2: Ask Questions to Make Data-driven Decisions (Module 1, 2) | - Effective questioning<br>- SMART framework<br>- Types of problem<br>- Business and data analysis<br>- Basic spreadsheets<br>- Basic formula and operator |
-| 4   | Course 2: Ask Questions to Make Data-driven Decisions (Module 3, 4) | - Softskills<br>- Spreadsheets function/formula<br>- Communication with stakeholders and team<br>- Meetings and email etiquette                            |
-| 5   | Course 3: Prepare data for exploration (Module 1, 2)                | - Data ethics<br>- Data source<br>- Data collection considerations<br>- Data structures                                                                    |
-| 6   | Course 3: Prepare data for exploration (Module 3)                   | - Databases<br>- Metadata<br>- CSV file<br>- How data is generated<br>- Extract data using spreadsheets and SQL                                            |
-| 7   | Course 3: Prepare data for exploration (Module 4)                   | - Organizing data<br>- Folder structure<br>- Access control<br>- Data security                                                                             |
-| 8   | Course 4: Process Data from Dirty to Clean (Module 1, 2)            | - Prepare and process data<br>- Data integrity<br>- Sample sizing<br>- Data cleaning<br>- Tools and technique                                              |
-| 9   | Course 4: Process Data from Dirty to Clean (Module 3, 4)            | - Advanced data-cleaning functions<br>- Data cleaning with BigQuery<br>- Data verification<br>- Documentation<br>- Changelog, and version control system   |
-| 10  | Course 5: Analyze Data to Answer Questions (Module 1)               | - Organizing data<br>- Data formatting<br>- SORT function<br>- FILTER function                                                                             |
-| 11  | Course 5: Analyze Data to Answer Questions (Module 2)               | - Data convert<br>- Data validation<br>- CONCAT and CONCATENATE                                                                                            |
-| 12  | Course 5: Analyze Data to Answer Questions (Module 3)               | - Aggregate functions<br>- VLOOKUP<br>- JOINs<br>- COUNT<br>- Subqueries                                                                                   |
+| Day | Course                                                              | Progress                                                                                                                                                                                      |
+| --- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Course 1: Foundations: Data, Data, Everywhere (Module 1, 2)         | - Process of data analysis<br>- Type of data<br>- Data life cycle                                                                                                                             |
+| 2   | Course 1: Foundations: Data, Data, Everywhere (Module 3)            | - Spreadsheets intro<br>- SQL intro<br>- R intro<br>- Data visualization<br>- Tableau intro<br>- Data fairness                                                                                |
+| 3   | Course 2: Ask Questions to Make Data-driven Decisions (Module 1, 2) | - Effective questioning<br>- SMART framework<br>- Types of problem<br>- Business and data analysis<br>- Basic spreadsheets<br>- Basic formula and operator                                    |
+| 4   | Course 2: Ask Questions to Make Data-driven Decisions (Module 3, 4) | - Softskills<br>- Spreadsheets function/formula<br>- Communication with stakeholders and team<br>- Meetings and email etiquette                                                               |
+| 5   | Course 3: Prepare data for exploration (Module 1, 2)                | - Data ethics<br>- Data source<br>- Data collection considerations<br>- Data structures                                                                                                       |
+| 6   | Course 3: Prepare data for exploration (Module 3)                   | - Databases<br>- Metadata<br>- CSV file<br>- How data is generated<br>- Extract data using spreadsheets and SQL                                                                               |
+| 7   | Course 3: Prepare data for exploration (Module 4)                   | - Organizing data<br>- Folder structure<br>- Access control<br>- Data security                                                                                                                |
+| 8   | Course 4: Process Data from Dirty to Clean (Module 1, 2)            | - Prepare and process data<br>- Data integrity<br>- Sample sizing<br>- Data cleaning<br>- Tools and technique                                                                                 |
+| 9   | Course 4: Process Data from Dirty to Clean (Module 3, 4)            | - Advanced data-cleaning functions<br>- Data cleaning with BigQuery<br>- Data verification<br>- Documentation<br>- Changelog, and version control system                                      |
+| 10  | Course 5: Analyze Data to Answer Questions (Module 1)               | - Organizing data<br>- Data formatting<br>- SORT function<br>- FILTER function                                                                                                                |
+| 11  | Course 5: Analyze Data to Answer Questions (Module 2)               | - Data convert<br>- Data validation<br>- CONCAT and CONCATENATE                                                                                                                               |
+| 12  | Course 5: Analyze Data to Answer Questions (Module 3)               | - Aggregate functions<br>- VLOOKUP<br>- JOINs<br>- COUNT<br>- Subqueries                                                                                                                      |
+| 13  | Course 5: Analyze Data to Answer Questions (Module 4)               | - Formulas for basic calculations<br>- Conditional formulas that use the IF function<br>- SUMPRODUCT function<br>- Pivot tables to organize calculations<br>- Queries and calculations in SQL |
 
 # Projects
 
