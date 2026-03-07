@@ -89,6 +89,7 @@ The Google Data Analytics Certificate course consists of 9 courses to earn certi
 | 15  | Course 6: Share Data Through the Art of Visualization (Module 3, 4) | - Tableau dashboard<br>- Effective data stories<br>- Presentation<br>- Q&A, Objections handling                                                                                               |
 | 16  | Course 7: Data Analysis with R Programming (Module 1, 2)            | - Introduction to R<br>- RStudio & Positron IDE<br>- Data structure<br>- R packages (tidyverse)<br>- Use pipes to nest code                                                                   |
 | 17  | Course 7: Data Analysis with R Programming (Module 3)               | - Data frame<br>- tibbles<br>- Data import<br>- R operator<br>- R data cleaning<br>- Bias function                                                                                            |
+| 18  | Course 7: Data Analysis with R Programming (Module 4)               | - ggplot2<br>- Adding label<br>- Adding annotation<br>- Aesthetics attributes<br>- ggsave()                                                                                                   |
 
 # License
 MIT License\
