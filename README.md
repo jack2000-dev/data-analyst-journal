@@ -101,8 +101,9 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 | 19    | Course 7: Data Analysis with R Programming (Module 5)               | - Documentation and reports<br>- R Markdown<br>- Exporting documentation<br>- Structure of a markdown document                                                                                |
 | 20    | Course 8: Google Data Analytics Capstone                            | - Building portfolio<br>- AI for data analytics<br>- Bellabeat case study                                                                                                                     |
 |       | ***Completed Google Data Analytics Certificate!***                  |                                                                                                                                                                                               |
-| ---   | ---                                                                 | ---                                                                                                                                                                                           |
+| 🎉    |                                                                     |                                                                                                                                                                                               |
 |       | **Google Advanced Data Analytics Certificate**                      |                                                                                                                                                                                               |
+| 21    | Course 1: Foundation of Data Science (Module 1, 2, 3)               | - Data science foundation<br>- Critical data security and privacy principles<br>- Data team structure<br>- How data professionals use AI                                                      |
 
 
 # License
