@@ -104,6 +104,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 | 🎉    |                                                                     |                                                                                                                                                                                               |
 |       | **Google Advanced Data Analytics Certificate**                      |                                                                                                                                                                                               |
 | 21    | Course 1: Foundation of Data Science (Module 1, 2, 3)               | - Data science foundation<br>- Critical data security and privacy principles<br>- Data team structure<br>- How data professionals use AI                                                      |
+| 22    | Course 1: Foundation of Data Science (Module 4, EOP)                | - PACE stages<br>- Best communication practices<br>- Project proposal<br>- End-of-course project                                                                                              |
 
 
 # License
