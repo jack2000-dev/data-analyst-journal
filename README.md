@@ -27,8 +27,9 @@ This repository is my data analyst journal to record and keep track of my learni
 - Tableau
 - PowerBI
 ## Additional
-### Blockchain
+### Blockchain DA
 - [Dune Analytics](https://dune.com/home)
+- [Transpose](https://app.transpose.io/)
 # Data Analysis Foundation
 
 Data is a collection of facts. Data is a clay to make a brick. You can use data to look into the past, present, and future. [Real example of data analytics.](https://online.hbs.edu/blog/post/business-analytics-examples)
@@ -100,15 +101,16 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 | 18    | Course 7: Data Analysis with R Programming (Module 4)               | - ggplot2<br>- Adding label<br>- Adding annotation<br>- Aesthetics attributes<br>- ggsave()                                                                                                                   |
 | 19    | Course 7: Data Analysis with R Programming (Module 5)               | - Documentation and reports<br>- R Markdown<br>- Exporting documentation<br>- Structure of a markdown document                                                                                                |
 | 20    | Course 8: Google Data Analytics Capstone                            | - Building portfolio<br>- AI for data analytics<br>- Bellabeat case study                                                                                                                                     |
-|       | ***Completed Google Data Analytics Certificate!***                  |                                                                                                                                                                                                               |
-| 🎉    |                                                                     |                                                                                                                                                                                                               |
+| 🎉    | ***Completed Google Data Analytics Certificate!***                  |                                                                                                                                                                                                               |
+| -     |                                                                     | -                                                                                                                                                                                                             |
 |       | **Google Advanced Data Analytics Certificate**                      |                                                                                                                                                                                                               |
 | 21    | Course 1: Foundation of Data Science (Module 1, 2, 3)               | - Data science foundation<br>- Critical data security and privacy principles<br>- Data team structure<br>- How data professionals use AI                                                                      |
 | 22    | Course 1: Foundation of Data Science (Module 4, EOP)                | - PACE stages<br>- Best communication practices<br>- Project proposal<br>- End-of-course project                                                                                                              |
 | 23    | Course 2: Get Started with Python (Module 1, 2)                     | - Introduction to Python<br>- Jupyter Notebook<br>- Object-oriented programming<br>- Variables<br>- Naming conventions<br>- Data types<br>- Function<br>- Conditional statement<br>- Operator<br>- Clean code |
+| 24    | Course 2: Get Started with Python (Module 3)                        | - While loops<br>- For loops<br>- Strings slicing                                                                                                                                                             |
 
 
 # License
 MIT License\
-Copyright © 2026 0xjackson-dev
+Copyright © 2026 jack2000-dev
 
