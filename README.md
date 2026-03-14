@@ -108,6 +108,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 | 22    | Course 1: Foundation of Data Science (Module 4, EOP)                | - PACE stages<br>- Best communication practices<br>- Project proposal<br>- End-of-course project                                                                                                              |
 | 23    | Course 2: Get Started with Python (Module 1, 2)                     | - Introduction to Python<br>- Jupyter Notebook<br>- Object-oriented programming<br>- Variables<br>- Naming conventions<br>- Data types<br>- Function<br>- Conditional statement<br>- Operator<br>- Clean code |
 | 24    | Course 2: Get Started with Python (Module 3)                        | - While loops<br>- For loops<br>- Strings slicing                                                                                                                                                             |
+| 25    | Course 2: Get Started with Python (Module 4, 5)                     | - Lists<br>- Tuples<br>- Dictionaries<br>- Sets<br>- Arrays<br>- NumPy<br>- pandas<br>- Python for dataset management                                                                                         |
 
 
 # License
