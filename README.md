@@ -111,6 +111,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 | 25    | Course 2: Get Started with Python (Module 4, 5)                                | - Lists<br>- Tuples<br>- Dictionaries<br>- Sets<br>- Arrays<br>- NumPy<br>- pandas<br>- Python for dataset management                                                                                         |
 | 26    | Course 3: Go Beyond the Numbers: Translate Data into Insights (Module 1, 2)    | - Exploratory Data Analysis (EDA)<br>- Data sources<br>- Data types<br>- Data formats<br>- How to use Python to uncover big picture understandings<br>- Date and time transformations in Python               |
 | 27    | Course 3: Go Beyond the Numbers: Translate Data into Insights (Module 3, 4, 5) | - EDA practices<br>- Missing data and outliers<br>- Categorical and numerical data<br>- Input validation<br>- Workplace skills<br>- Ethical considerations<br>- Tableau advanced                              |
+| 28    | Course 4: The Power of Statistics                                              | - Introduction to statistics<br>- Descriptive statistics<br>- Mean, median, mode<br>- Calculate statistics with Python                                                                                        |
 
 
 # License
