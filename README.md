@@ -58,6 +58,9 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 [4 Examples of Business Analytics in Action](https://online.hbs.edu/blog/post/business-analytics-examples)
 # Projects
 *placeholder*
+
+# Practices
+- [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginner
 # Timeline
 ## Google Data Analytics Certificate course 
 1. Foundations: Data, Data, Everywhere
