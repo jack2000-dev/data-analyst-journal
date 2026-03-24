@@ -62,25 +62,6 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 # Practices
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginner
 # Timeline
-## Google Data Analytics Certificate course 
-1. Foundations: Data, Data, Everywhere
-2. Ask Questions to Make Data-Driven Decisions
-3. Prepare Data for Exploration
-4. Process Data from Dirty to Clean
-5. Analyze Data to Answer Questions
-6. Share Data Through the Art of Visualization
-7. Data Analysis with R Programming
-8. Google Data Analytics Capstone: Complete a Case Study
-9. Accelerate Your Job Search with AI (Optional)
-
-## Google Advanced Data Analytics Certificate course
-1. Foundations of Data Science
-2. Get Started with Python
-3. Go Beyond the Numbers: Translate Data into Insights
-4. The Power of Statistics
-5. Regression Analysis: Simplify Complex Data Relationships
-6. The Nuts and Bolts of Machine Learning
-7. Google Advanced Data Analytics Capstone
 
 | Day   | Course                                                                              | Progress                                                                                                                                                                                                                                                                                                                                  |
 | ----- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
