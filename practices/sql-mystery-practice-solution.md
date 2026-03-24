@@ -29,6 +29,7 @@ AND city = 'SQL City'
 ```
 
 **Result:**
+
 ![query 1](../img/sql-mystery-img/query_1.png)
 
 Detective: What do we have here? There was only one record on 20180115 with murder at SQL city which match our evidence above. We need to focus on 2 witnesses and record our data in table format to keep track.
@@ -62,6 +63,7 @@ ORDER BY address_number DESC
 And the last house according to `address_number` on `Northwestern Dr` street is **"Morty Schapiro"** and we used `ORDER BY address_number DESC` to show the last house. So we going to update the clues table.
 
 **Result:**
+
 ![query 2](../img/sql-mystery-img/query_2.png)
 
 The clues table updated. Let's gather data from witness B
@@ -72,6 +74,8 @@ SELECT *
 FROM person
 WHERE address_street_name = 'Franklin Ave'AND name LIKE '%Annabel%'
 ```
+**Result:**
+
 ![query 3](../img/sql-mystery-img/query_3.png)
 
 Now let's update the Clues table. 
@@ -106,6 +110,7 @@ SELECT *
 ```
 
 **Result:**
+
 ![query 5](../img/sql-mystery-img/query_5.png)
 
 |membership_id|check_in_date|check_in_time|check_out_time|id|person_id|name|membership_start_date|membership_status|id|name|license_id|address_number|address_street_name|ssn|id|age|height|eye_color|hair_color|gender|plate_number|car_make|car_model|
@@ -117,6 +122,7 @@ Our suspect is **Jeremy Bowers**, but we need to dig more to find proof.
 We havn't look into `facebook_event_checkin` table for the detail that related to the suspect
 
 **Query 6:**
+
 ```SQL
 SELECT *
 FROM get_fit_now_member AS m
