@@ -5,7 +5,7 @@ This repository is my data analyst journal to record and keep track of my learni
 
 # Useful Links
 - ⭐ [awesom-data-analysis](https://github.com/PavelGrigoryevDS/awesome-data-analysis)
-- [My Kaggle profile](https://www.kaggle.com/jackwp)
+- [Kaggle (My profile)](https://www.kaggle.com/jackwp)
 - [Data community](https://towardsdatascience.com/)
 - [Data analyst roadmap](https://github.com/mtahiraslan/data-analyst-roadmap)
 # Techstacks
@@ -39,7 +39,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 
 ## Process of Data Analysis
 
-> The biggest mistake analysts make when using this framework is looking for quick and easy answers. This framework is not linear. We can go back and forth to make sure that all steps are correct and practical. And review your work in each phase to improve.
+> The biggest mistake analysts make when using this framework is looking for quick and easy answers. This framework is not linear. We can go back and forth to make sure that all steps are correct and practical. And review your work in each phase to improve. Ask the right question and understand the objective. Don't worry about the right answer. Enjoy exploring the data to find the unknown insight
 
 - **Ask:** business challenge, objective, or question
 
@@ -52,8 +52,6 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 - **Share:** communicating and interpreting results
 
 - **Act:** putting insights to work to solve the problem
-
-> Ask the right question and understand the objective. Don't worry about the right answer. Enjoy exploring the data to find the unknown insight
 
 [4 Examples of Business Analytics in Action](https://online.hbs.edu/blog/post/business-analytics-examples)
 # Projects
