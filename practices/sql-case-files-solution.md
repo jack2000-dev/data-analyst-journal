@@ -345,3 +345,197 @@ JOIN shipments s ON s.contract_id = c.contract_id
 WHERE c.amount > 50000
 ORDER BY c.amount DESC
 ```
+
+# CASE FILE: S04 - Disappearing Cargo
+
+![CASE FILE S04 - Disappearing Cargo](../img/sql-case-files-img/CASE%20FILE%20S04%20-%20Disappearing%20Cargo.png)
+
+## Solution
+
+**31) The Missing Shipments**
+
+The warehouse manager is panicking. Show me exactly what's gone. List the `po_id` and `item_description` for every purchase order that has no corresponding delivery record, sorted by `po_id`.
+
+```SQL
+-- My incorrect answer
+SELECT p.po_id, p.item_description 
+FROM purchase_orders AS p 
+JOIN deliveries d ON d.po_id = p.po_id 
+JOIN inventory i ON i.po_id = d.po_id 
+WHERE p.po_id IS NULL
+ORDER BY p.po_id
+```
+
+```SQL
+-- The correct answer
+SELECT 
+    p.po_id, 
+    p.item_description
+FROM purchase_orders AS p
+LEFT JOIN deliveries d ON p.po_id = d.po_id
+WHERE d.po_id IS NULL
+ORDER BY p.po_id;
+```
+
+**32) The Phantom Vendors**
+
+We suspect ghost vendors. Expose them by listing the `vendor_name` and `item_description` for every order that was never delivered, sorted by `vendor_name`.
+
+```SQL
+SELECT p.vendor_name,
+       p.item_description
+FROM deliveries AS d
+RIGHT JOIN purchase_orders p ON d.po_id = p.po_id
+WHERE d.delivery_id IS NULL
+ORDER BY p.vendor_name
+```
+
+**33) The Value of Nothing**
+
+The Chief needs a number. Quantify the loss by calculating the total value of all undelivered orders (quantity * unit_price) and alias it as `missing_value`.
+
+```SQL
+SELECT SUM(quantity * unit_price) AS missing_value
+FROM deliveries AS d
+RIGHT JOIN purchase_orders p ON d.po_id = p.po_id
+WHERE d.delivery_id IS NULL
+```
+
+**34) Partial Deliveries**
+
+Interrogation revealed they are skimming off the top. Detect this by listing the `po_id`, `item_description`, `quantity`, and `delivered_quantity` for any order where the delivered amount is less than ordered. Sort by `po_id`.
+
+```SQL
+SELECT p.po_id,
+       p.item_description,
+       p.quantity,
+       d.delivered_quantity
+FROM purchase_orders AS p
+JOIN deliveries d ON d.po_id = p.po_id
+WHERE d.delivered_quantity < p.quantity
+ORDER BY p.po_id
+```
+
+**35) The Inventory Discrepancy**
+
+It's an inside job. Trace the internal theft by listing the `delivery_id` and `item_description` for any shipment that was delivered but never scanned into inventory. Sort by `delivery_id`.
+
+```SQL
+SELECT d.delivery_id, p.item_description
+FROM purchase_orders AS p
+JOIN deliveries d ON d.po_id = p.po_id
+LEFT JOIN inventory i ON i.po_id = d.po_id
+WHERE i.last_audit IS NULL
+ORDER BY d.delivery_id
+```
+
+**36) Stock Shrinkage**
+
+The books are cooked. Audit the stock levels by listing the `item_description`, `expected_stock`, and `current_stock` for items where `current_stock` is less than expected. Calculate the difference as `missing`, sorted by `item_description`.
+
+```SQL
+SELECT p.item_description, i.expected_stock, i.current_stock, i.expected_stock - i.current_stock AS missing
+FROM purchase_orders AS p
+JOIN deliveries d ON d.po_id = p.po_id
+JOIN inventory i ON i.po_id = d.po_id
+WHERE i.current_stock < i.expected_stock
+ORDER BY p.item_description
+```
+
+**37) The Timeline Gap**
+
+We need to find when the breakdown started. Analyze the timeline gaps by listing the `vendor_name`, `order_date`, and `delivery_date` for every purchase order, sorted by `order_date`.
+
+```SQL
+SELECT p.vendor_name, p.order_date, d.delivery_date
+FROM purchase_orders AS p
+FULL JOIN deliveries d ON d.po_id = p.po_id
+ORDER BY p.order_date
+```
+
+**38) The Warehouse Leak**
+
+Pinpoint the leaks. Rank the warehouses by loss, showing the `target_warehouse` and the count of **missing** deliveries (`missing_shipments`) for each. Order by `missing_shipments` from highest to lowest.
+
+```SQL
+-- My incorrect answer
+SELECT p.target_warehouse, COUNT(i.expected_stock - i.current_stock) AS missing_shipments
+FROM purchase_orders AS p
+FULL JOIN deliveries d ON d.po_id = p.po_id
+JOIN inventory i ON i.po_id = d.po_id
+GROUP BY p.target_warehouse
+ORDER BY missing_shipments DESC
+```
+
+```SQL
+-- The correct answer
+SELECT po.target_warehouse, 
+COUNT(po.po_id) AS missing_shipments 
+FROM purchase_orders po 
+LEFT JOIN deliveries d ON po.po_id = d.po_id
+WHERE d.delivery_id IS NULL
+GROUP BY po.target_warehouse
+ORDER BY missing_shipments DESC;
+```
+
+**39) The Vendor Scorecard**
+
+We need a performance review. Scorecard the vendors by listing the `vendor_name`, `total_orders`, `successful_deliveries`, and `total_value`. Rank by successful deliveries, highest to lowest.
+
+```SQL
+-- My incorrect answer
+SELECT p.vendor_name,
+       SUM(p.quantity) AS total_orders,
+       COUNT(p.quantity) - 
+       COUNT(d.delivered_quantity) AS successful_deliveries,
+       p.unit_price * p.quantity AS total_value
+FROM purchase_orders AS p
+LEFT JOIN deliveries d ON d.po_id = p.po_id
+GROUP BY p.vendor_name
+ORDER BY successful_deliveries DESC
+```
+
+```SQL
+-- The correct answer
+SELECT po.vendor_name, 
+       COUNT(po.po_id) AS total_orders,
+       COUNT(d.delivery_id) AS successful_deliveries,
+       SUM(po.quantity * po.unit_price) AS total_value 
+FROM purchase_orders po 
+LEFT JOIN deliveries d ON po.po_id = d.po_id 
+GROUP BY po.vendor_name 
+ORDER BY successful_deliveries DESC;
+```
+
+**40) The Final Audit**
+
+The DA needs everything. Compile the final audit report listing `po_id`, `vendor_name`, `item_description`, `order_value`, `delivery_status`, and `inventory_loss`. Rank by order value descending.
+
+```SQL
+-- My incorrect answer
+SELECT p.po_id,
+       p.vendor_name,
+       p.item_description,
+       p.quantity * p.unit_price AS order_value,
+       COUNT(d.delivery_id) AS delivery_status,
+       i.expected_stock - i.current_stock AS inventory_loss
+FROM purchase_orders AS p
+LEFT JOIN deliveries d ON d.po_id = p.po_id
+LEFT JOIN inventory i ON i.po_id = d.po_id
+GROUP BY p.vendor_name
+ORDER BY order_value DESC;
+```
+
+```SQL
+-- The correct answer
+SELECT po.po_id, 
+       po.vendor_name,
+       po.item_description,
+       po.quantity * po.unit_price AS order_value,
+       CASE WHEN d.delivery_id IS NULL 
+       THEN 'Not Delivered' ELSE 'Delivered' END AS delivery_status, COALESCE(i.expected_stock - i.current_stock, 0) AS inventory_loss 
+FROM purchase_orders po
+LEFT JOIN deliveries d ON po.po_id = d.po_id
+LEFT JOIN inventory i ON po.po_id = i.po_id
+ORDER BY order_value DESC;
+```
