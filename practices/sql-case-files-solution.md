@@ -539,3 +539,110 @@ LEFT JOIN deliveries d ON po.po_id = d.po_id
 LEFT JOIN inventory i ON po.po_id = i.po_id
 ORDER BY order_value DESC;
 ```
+
+# CASE FILE: S05 - Pattern of Violence
+
+![CASE FILE S05 - Pattern of Violence](../img/sql-case-files-img/CASE%20FILE%20S05%20-%20Pattern%20of%20Violence.png)
+
+## Solution
+
+**41) The Repeat Offender**
+
+It's not random. Someone is hitting the city again and again. Identify the repeat offenders by listing the `suspect_id`, `name`, and `incident_count` for any suspect linked to more than one assault. Sort by `incident_count` descending.
+
+```SQL
+SELECT i.suspect_id, s.name, COUNT(i.incident_id) AS incident_count
+FROM incidents AS i
+JOIN suspects s
+ON i.suspect_id = s.suspect_id
+GROUP BY s.suspect_id, s.name
+HAVING incident_count > 1
+ORDER BY incident_count DESC
+```
+
+**42) The Weapon Pattern**
+
+We need to understand their MO. Analyze the weapon usage patterns by listing the `weapon_used` and the `usage_count` for each type, ranked by frequency.
+
+```SQL
+SELECT i.weapon_used, COUNT(i.weapon_used) AS usage_count
+FROM incidents AS i
+GROUP BY i.weapon_used
+ORDER BY usage_count DESC
+```
+
+**43) The Time Hunter**
+
+Serial attackers follow a schedule. Predict the next strike by grouping attacks into 'Night' (22:00-06:00), 'Morning' (06:00-12:00), 'Afternoon' (12:00-18:00), and 'Evening' (18:00-22:00). List the `time_period` and `incident_count`, ranked by frequency.
+
+```SQL
+/*
+At first, I used BETWEEN, but AI suggested that it might overlap
+because we're dealing with TIME data here.
+
+Smarter approch here would be putting 'Evening' to ELSE instead of 'Error'
+*/
+SELECT
+CASE
+  WHEN time_of_day >= '22:00' OR time_of_day < '06:00' THEN 'Night' -- Use OR to prevent time overlap issue
+  WHEN time_of_day >= '06:00' AND time_of_day < '12:00' THEN 'Morning'
+  WHEN time_of_day >= '12:00' AND time_of_day < '18:00' THEN 'Afternoon'
+  WHEN time_of_day >= '18:00' AND time_of_day < '22:00' THEN 'Evening'
+  ELSE 'Error'
+END AS time_period,
+COUNT(DISTINCT incident_id) AS incident_count
+FROM incidents
+GROUP BY time_period
+ORDER BY incident_count DESC
+```
+
+**44) The Victim Profile**
+
+We need a victimology profile. Categorize victims into 'Young Adult' (< 25), 'Adult' (< 35), and 'Older Adult' (35+). For each group, list the `age_group`, `victim_count`, and `avg_age`, ranked by count.
+
+```SQL
+SELECT
+CASE
+  WHEN victim_age < 25 THEN 'Young Adult'
+  WHEN victim_age < 35 THEN 'Adult'
+  ELSE 'Older Adult'
+END AS age_group,
+COUNT(incident_id) AS victim_count,
+AVG(victim_age)
+FROM incidents
+GROUP BY age_group
+ORDER BY victim_count DESC
+```
+
+**45) The Severity Escalation**
+
+Violence is escalating. Track the trend by listing the `suspect_id`, `name`, `avg_severity`, `max_severity`, and `incident_count` for suspects with multiple incidents. Rank by average severity to catch the worst offenders.
+
+```SQL
+SELECT s.suspect_id, 
+       s.name,
+       AVG(i.injury_severity) AS avg_severity,
+       MAX(i.injury_severity) AS max_severity,
+       COUNT(DISTINCT i.incident_id) AS incident_count
+FROM incidents AS i
+JOIN suspects s
+ON i.suspect_id = s.suspect_id
+GROUP BY s.suspect_id -- Need to group by s.name too so it can match
+HAVING incident_count > 1
+ORDER BY avg_severity DESC
+```
+
+```SQL
+SELECT s.suspect_id,
+       s.name,
+       AVG(i.injury_severity) AS avg_severity,
+       MAX(i.injury_severity) AS max_severity,
+       COUNT(*) AS incident_count 
+FROM suspects s 
+JOIN incidents i 
+ON s.suspect_id = i.suspect_id
+GROUP BY s.suspect_id, s.name
+HAVING COUNT(*) > 1 
+ORDER BY avg_severity DESC;
+```
+
