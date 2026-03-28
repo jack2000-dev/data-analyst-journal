@@ -646,3 +646,167 @@ HAVING COUNT(*) > 1
 ORDER BY avg_severity DESC;
 ```
 
+**46) The Location Hunter**
+
+They are hunting in specific zones. Map the grounds by listing the `security_level`, `foot_traffic`, and `incident_count` for each combination, ranked by frequency.
+
+```SQL
+-- My incorrect answer (The database is )
+SELECT l.security_level,
+       l.foot_traffic,
+       COUNT(i.incident_id) AS incident_count
+FROM locations AS l 
+JOIN incidents i ON l.location_id = i.incident_id
+GROUP BY l.security_level, l.foot_traffic
+ORDER BY incident_count ASC
+```
+
+```SQL
+-- The correct answer
+SELECT l.security_level, 
+l.foot_traffic, COUNT(i.incident_id) AS incident_count 
+FROM incidents i 
+JOIN locations l ON i.location = l.area_name 
+GROUP BY l.security_level, l.foot_traffic 
+ORDER BY incident_count DESC;
+```
+
+*Lesson:* 
+
+- ***The "Hacker" Way:** Join on whatever text matches to get the answer quickly.*
+- ***The "Architect" Way:** Use PK/FK to ensure the data is mathematically 100% accurate and lightning-fast.*
+
+**47) The Signature Analysis**
+
+Every predator has a signature. Isolate it for suspect #101 (Marcus Steele). Identify the most common combination of `weapon_used`, `time_period` (Night: 22:00-06:00, else Day), and `victim_type` (Young: < 25, else Older). List the combination and its `pattern_count`, ranked by count.
+
+```SQL
+-- My incorrect answer
+SELECT i.weapon_used,
+    CASE WHEN i.time_of_day >= '22:00:00'
+    OR i.time_of_day <= '06:00:00' THEN 'Night' 
+    ELSE 'Day' 
+  END AS time_period,
+    CASE WHEN i.victim_age < 25 THEN 'Young' 
+    ELSE 'Older' 
+  END AS victim_type,
+    COUNT(*) AS pattern_count
+FROM incidents AS i
+GROUP BY 1, 2, 3
+ORDER BY pattern_count DESC;
+```
+
+```SQL
+-- The correct answer (mostly because I don't understand the challenge correctly)
+SELECT weapon_used, 
+    CASE WHEN time_of_day >= '22:00' 
+    OR time_of_day < '06:00' THEN 'Night'
+    ELSE 'Day'
+  END AS time_period,
+    CASE WHEN victim_age < 25 THEN 'Young' 
+    ELSE 'Older'
+  END AS victim_type,
+  COUNT(*) AS pattern_count
+  FROM incidents 
+  WHERE suspect_id = 101
+  GROUP BY weapon_used, 
+  CASE WHEN time_of_day >= '22:00' 
+  OR time_of_day < '06:00' THEN 'Night'
+  ELSE 'Day' 
+  END, 
+  CASE WHEN victim_age < 25 THEN 'Young'
+  ELSE 'Older'
+  END
+  ORDER BY pattern_count DESC;
+```
+
+**48) The Cooling-Off Period**
+
+Is there a cooling-off period? Check the timeline for suspect #101 by calculating the `incident_count`, `first_incident` ID, and `last_incident` ID to see the full span of his activity.
+
+```SQL
+SELECT 
+  COUNT(i.incident_id) AS incident_count,
+  MIN(i.incident_id) AS first_incident,
+  MAX(i.incident_id) AS last_incident
+FROM incidents AS i
+LEFT JOIN suspects s ON i.suspect_id = s.suspect_id
+WHERE s.suspect_id = 101
+```
+
+**49) The Accomplice Network**
+
+He might not be working alone. Uncover the network by finding pairs of suspects who share *multiple* location and weapon preferences. List `suspect1`, `suspect2`, and the count of `shared_patterns`, ranked by shared patterns.
+
+```SQL
+-- My incorrect answer
+SELECT 
+    i.suspect_id AS suspect1, 
+    s.suspect_id AS suspect2, 
+    COUNT(*) AS shared_patterns
+FROM incidents AS i
+JOIN suspects s 
+    ON i.suspect_id = s.suspect_id 
+    AND i.location = i.location
+GROUP BY suspect1, suspect2
+HAVING shared_patterns > 1
+ORDER BY shared_patterns DESC;
+```
+
+```SQL
+-- The correct answer
+SELECT 
+  i1.suspect_id AS suspect1,
+  i2.suspect_id AS suspect2,
+  COUNT(*) AS shared_patterns
+  FROM incidents i1
+  JOIN incidents i2 
+  ON i1.location = i2.location 
+  AND i1.weapon_used = i2.weapon_used
+WHERE i1.suspect_id < i2.suspect_id
+GROUP BY i1.suspect_id, i2.suspect_id 
+HAVING COUNT(*) > 1
+ORDER BY shared_patterns DESC;
+```
+
+**50) The Predator Profile**
+
+We have him. Build the final predator profile for Marcus Steele (ID 101). Generate a comprehensive report including `name`, `age`, `arrest_count`, `total_incidents`, `avg_severity`, `max_severity`, `knife_attacks`, `night_attacks`, and `young_victims`.
+
+```SQL
+-- My almost correct answer
+SELECT s.name, s.age, s.arrest_count, 
+       COUNT(DISTINCT i.incident_id) AS total_incidents,
+       AVG(i.injury_severity) AS avg_severity,
+       MAX(i.injury_severity) AS max_severity,
+-- Weapon logic
+COUNT(CASE WHEN i.weapon_used = 'Knife' THEN 'knife_attacks'
+END) AS knife_attacks,
+-- Time logic
+COUNT(CASE WHEN i.time_of_day >= '22:00' OR i.time_of_day <= '06:00' THEN 'night_attacks' -- Should use 1 as TRUE
+END) AS night_attacks,
+-- Age logic
+COUNT(CASE WHEN i.victim_age < 25 THEN 'young_victims'
+END) AS young_victims
+
+FROM incidents AS i
+JOIN suspects s ON i.suspect_id = s.suspect_id
+WHERE s.suspect_id = 101
+GROUP BY s.name, s.age, s.arrest_count
+```
+
+```SQL
+-- The correct answer
+SELECT s.name, 
+       s.age,
+       s.arrest_count,
+       COUNT(i.incident_id) AS total_incidents,
+       AVG(i.injury_severity) AS avg_severity,
+       MAX(i.injury_severity) AS max_severity,
+       COUNT(CASE WHEN i.weapon_used = 'Knife' THEN 1 END) AS knife_attacks,          COUNT(CASE WHEN i.time_of_day >= '22:00' THEN 1 END) AS night_attacks,         COUNT(CASE WHEN i.victim_age < 25 THEN 1 END) AS young_victims
+FROM suspects s
+JOIN incidents i ON s.suspect_id = i.suspect_id
+WHERE s.suspect_id = 101
+GROUP BY s.suspect_id, s.name, s.age, s.arrest_count;
+```
+
