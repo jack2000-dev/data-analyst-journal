@@ -810,3 +810,93 @@ WHERE s.suspect_id = 101
 GROUP BY s.suspect_id, s.name, s.age, s.arrest_count;
 ```
 
+# CASE FILE: S06 - Web of Lies
+
+![CASE FILE S06 - Web of Lies](../img/sql-case-files-img/CASE%20FILE%20S06%20-%20Web%20of%20Lies.png)
+
+**51) The Network Map**
+
+We've intercepted the dossier. Map the hierarchy by listing the `real_name` of every superior and their subordinate (aliased as `superior` and `subordinate`). Sort by the superior's name.
+
+```SQL
+SELECT 
+    sup.real_name AS superior, 
+    sub.real_name AS subordinate
+FROM relationships r
+JOIN operatives sup ON r.superior_id = sup.operative_id
+JOIN operatives sub ON r.subordinate_id = sub.operative_id
+ORDER BY superior
+```
+
+**52) The Chain of Command**
+
+Focus on direct orders. Trace the command line by listing the `code_name` of every superior and their subordinate (aliased as `superior` and `subordinate`) linked by a 'Command' relationship. Sort by superior's code name.
+
+```SQL
+-- My incorrect answer
+SELECT DISTINCT sup.code_name AS superior,
+       sub.code_name AS subordinate
+FROM relationships AS r
+JOIN operatives sup ON r.superior_id = sup.operative_id
+JOIN operatives sub ON r.subordinate_id = sub.operative_id 
+LEFT JOIN communications c1 ON r.superior_id = c1.comm_id 
+LEFT JOIN communications c2 ON r.subordinate_id = c2.comm_id
+ORDER BY sup.code_name
+```
+
+```SQL
+SELECT s.code_name AS superior,
+       sub.code_name AS subordinate
+FROM relationships r 
+JOIN operatives s ON r.superior_id = s.operative_id 
+JOIN operatives sub ON r.subordinate_id = sub.operative_id 
+WHERE r.relationship_type = 'Command' 
+ORDER BY s.code_name;
+```
+
+**53) The Communication Web**
+
+The wires are hot. Intercept the chatter by listing the `code_name` of the sender and receiver (aliased as `sender` and `receiver`) along with the `message_type`. Sort by the sender's code name.
+
+```SQL
+SELECT s.code_name AS sender,
+       r.code_name AS receiver,
+       c.message_type
+FROM communications AS c
+JOIN operatives s ON c.sender_id = s.operative_id
+JOIN operatives r ON c.receiver_id = r.operative_id
+ORDER BY s.code_name
+```
+
+**54) The Recruitment Chain**
+
+We need to find who is bringing them in. Expose the recruitment pipeline by listing the `code_name` of any 'Recruiter' and their 'Scout' or 'Coordinator' subordinate (aliased as `recruiter` and `recruit`), along with the recruit's `role`. Sort by the recruiter's code name.
+
+```SQL
+-- r1 = recruiter | r2 = recruit
+SELECT 
+    r1.code_name AS recruiter,
+    r2.code_name AS recruit,
+    r2.role AS role
+FROM relationships AS r
+JOIN operatives AS r1 ON r.superior_id = r1.operative_id
+JOIN operatives AS r2 ON r.subordinate_id = r2.operative_id
+WHERE r1.role = 'Recruiter'
+  AND r2.role IN ('Scout', 'Coordinator')
+ORDER BY recruiter;
+```
+
+**55) The Enforcement Network**
+
+They work in teams. Identify the muscle by finding pairs of 'Enforcer' operatives linked by a 'Partnership'. List their code names as `enforcer1` and `enforcer2`. Sort by `enforcer1` code name.
+
+```SQL
+SELECT sup.code_name AS enforcer1,
+       sub.code_name AS enforcer2
+FROM relationships AS r
+JOIN operatives sup ON r.superior_id = sup.operative_id
+JOIN operatives sub ON r.subordinate_id = sub.operative_id
+WHERE (sup.role= 'Enforcer' OR sub.role = 'Enforcer')
+  AND r.relationship_type = 'Partnership'  
+ORDER BY enforcer1;
+```
