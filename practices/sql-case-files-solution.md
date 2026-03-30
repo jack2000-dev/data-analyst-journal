@@ -900,3 +900,141 @@ WHERE (sup.role= 'Enforcer' OR sub.role = 'Enforcer')
   AND r.relationship_type = 'Partnership'  
 ORDER BY enforcer1;
 ```
+
+**56) The Compromised Assets**
+
+Raven has turned. We need a damage assessment. List the distinct `code_name` and `role` of any operative who has a direct relationship with 'Raven'. Sort by `code_name`.
+
+```SQL
+SELECT DISTINCT o.code_name, o.role
+FROM operatives o
+JOIN relationships r ON o.operative_id = r.superior_id 
+OR o.operative_id = r.subordinate_id
+WHERE (
+    r.superior_id = (SELECT operative_id FROM operatives WHERE code_name = 'Raven')
+OR 
+r.subordinate_id = (SELECT operative_id FROM operatives WHERE code_name = 'Raven')
+)
+AND o.code_name != 'Raven'
+ORDER BY o.code_name;
+```
+
+**57) The Communication Frequency**
+
+High volume means high priority. Analyze traffic volume by counting the messages exchanged between each pair of operatives. List the `sender`, `receiver`, and `message_count`, ranked by frequency.
+
+```SQL
+SELECT s.code_name AS sender,
+       r.code_name AS receiver,
+       COUNT(c.comm_id) AS message_count
+FROM communications AS c
+JOIN operatives s ON s.operative_id = c.sender_id
+JOIN operatives r ON r.operative_id = c.receiver_id
+GROUP BY sender, receiver
+ORDER BY message_count DESC
+```
+
+**58) The Operational Timeline**
+
+When did this start? Reconstruct the timeline by listing the `superior` and `subordinate` code names, `relationship_type`, and `established_date` for all connections, sorted chronologically.
+
+```SQL
+SELECT sup.code_name AS superior,
+       sub.code_name AS subordinate,
+       r.relationship_type,
+       r.established_date
+FROM relationships AS r
+JOIN operatives sup ON r.superior_id = sup.operative_id
+JOIN operatives sub ON r.subordinate_id = sub.operative_id
+ORDER BY r.established_date ASC
+```
+
+**59) The Network Depth**
+
+The Architect uses layers of protection. Peel them back. Identify the operatives two steps removed from 'The Architect'. List the hierarchy as `top_leader`, `middle_manager`, and `subordinate`, sorted by `middle_manager`.
+
+```SQL
+SELECT 'The Architect' AS top_manager,
+       m_op.code_name AS middle_manager,
+       s_op.code_name AS subordinate
+FROM operatives AS a_op
+-- 1st layer
+JOIN relationships r1 ON a_op.operative_id = r1.superior_id 
+JOIN operatives m_op ON r1.subordinate_id = m_op.operative_id
+-- 2nd layer 
+JOIN relationships r2 ON m_op.operative_id = r2.superior_id 
+JOIN operatives s_op ON r2.subordinate_id = s_op.operative_id
+WHERE a_op.code_name = 'The Architect'
+ORDER BY middle_manager
+```
+
+**60) The Complete Network**
+
+This is the takedown. Map the full network by generating a dossier for each operative including `code_name`, `real_name`, `role`, `status`, `total_connections`, and `total_communications`. Rank by connections, then communications.
+
+```SQL
+SELECT o.operative_id,
+       o.code_name,
+       o.real_name,
+       o.role,
+       o.status,
+(SELECT COUNT(*)
+     FROM relationships r
+     WHERE r.superior_id = o.operative_id
+     OR r.subordinate_id = o.operative_id) AS total_connections,
+(SELECT COUNT(*)
+     FROM communications c
+     WHERE c.sender_id = o.operative_id
+     OR c.receiver_id = o.operative_id) AS total_communications
+FROM operatives AS o
+ORDER BY total_connections DESC, total_communications DESC
+```
+
+*Official solution:*
+
+```SQL
+SELECT DISTINCT o.operative_id, o.code_name, o.real_name, o.role, o.status, 
+
+COUNT(DISTINCT r1.relationship_id) + COUNT(DISTINCT r2.relationship_id) AS total_connections, 
+
+COUNT(DISTINCT c1.comm_id) + COUNT(DISTINCT c2.comm_id) AS total_communications 
+
+FROM operatives o 
+LEFT JOIN relationships r1 ON o.operative_id = r1.superior_id 
+LEFT JOIN relationships r2 ON o.operative_id = r2.subordinate_id 
+LEFT JOIN communications c1 ON o.operative_id = c1.sender_id LEFT JOIN communications c2 ON o.operative_id = c2.receiver_id 
+GROUP BY o.operative_id, o.code_name, o.real_name, o.role, o.status 
+ORDER BY total_connections DESC, total_communications DESC;
+```
+
+*Alternative solution using CTE:*
+
+```SQL
+WITH ConnectionCounts AS (
+    SELECT operative_id, COUNT(*) as c_count
+    FROM (
+        SELECT superior_id AS operative_id FROM relationships
+        UNION ALL
+        SELECT subordinate_id AS operative_id FROM relationships
+    )
+    GROUP BY operative_id
+),
+CommCounts AS (
+    SELECT operative_id, COUNT(*) as m_count
+    FROM (
+        SELECT sender_id AS operative_id FROM communications
+        UNION ALL
+        SELECT receiver_id AS operative_id FROM communications
+    )
+    GROUP BY operative_id
+)
+SELECT 
+    o.code_name, o.real_name, o.role, o.status,
+    -- COALESCE to turn "NULL" into "0" for operatives with no activity.
+    COALESCE(cc.c_count, 0) AS total_connections,
+    COALESCE(cm.m_count, 0) AS total_communications
+FROM operatives o
+LEFT JOIN ConnectionCounts cc ON o.operative_id = cc.operative_id
+LEFT JOIN CommCounts cm ON o.operative_id = cm.operative_id
+ORDER BY total_connections DESC, total_communications DESC;
+```
