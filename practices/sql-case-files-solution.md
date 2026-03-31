@@ -845,6 +845,7 @@ ORDER BY sup.code_name
 ```
 
 ```SQL
+-- The correct answer
 SELECT s.code_name AS superior,
        sub.code_name AS subordinate
 FROM relationships r 
@@ -1037,4 +1038,140 @@ FROM operatives o
 LEFT JOIN ConnectionCounts cc ON o.operative_id = cc.operative_id
 LEFT JOIN CommCounts cm ON o.operative_id = cm.operative_id
 ORDER BY total_connections DESC, total_communications DESC;
+```
+
+# CASE FILE: S07 - Ghost Accounts
+
+![CASE FILE S07 - Ghost Accounts](../img/sql-case-files-img/CASE%20FILE%20S07%20-%20Ghost%20Accounts.png)
+
+**61) The Risk Assessment**
+
+Financial Crimes needs these categorized. Triage the transfers by listing the `transaction_id` and `amount`. Categorize each as 'High Risk' (>$100k), 'Medium Risk' ($50k-$100k), or 'Low Risk' (<$50k), aliased as `risk_category`.
+
+```SQL
+SELECT  t.transaction_id, t.amount,
+  CASE
+  WHEN t.amount > 100000 THEN 'High Risk'
+  WHEN t.amount >= 50000 THEN 'Medium Risk'
+  ELSE 'Low risk'
+END AS 'risk_category'
+FROM transactions AS t
+```
+
+**62) The Account Classification**
+
+Don't let them slip through. Classify the accounts by listing `account_name`, `account_type`, and `owner_name`. Assign a `monitoring_level`: 'Maximum' for Shell/Offshore, 'High' for Business with 'Unknown' owners, else 'Standard'.
+
+```SQL
+SELECT a.account_name, 
+       a.account_type,
+       a.owner_name,
+CASE
+  WHEN a.account_type IN ('Shell', 'Offshore') THEN 'Maximum'
+  WHEN a.account_type = 'Business' AND a.owner_name = 'Unknow' THEN 'High'
+  ELSE 'Standard'
+END AS monitoring_level
+FROM 
+  accounts AS a
+```
+
+**63) The High Value Transfer**
+
+We need to see the flow. Follow it by listing `transaction_id`, `amount`, `creation_date`, and `transaction_date`. Categorize by value: 'High Value' (>$100k), 'Medium Value' (>$50k), else 'Low Value', aliased as `risk_level`.
+
+```SQL
+SELECT t.transaction_id,
+       t.amount,
+       a.creation_date,
+       t.transaction_date,
+CASE
+  WHEN t.amount > 100000 THEN 'High Value'
+  WHEN t.amount > 50000 THEN 'Medium Value'
+  ELSE 'Low Value'
+END AS risk_level
+
+FROM transactions AS t
+JOIN accounts a
+ON t.account_from = a.account_id
+```
+
+**64) The Layering Detection**
+
+Find the hubs moving money in circles. For each account, list the `account_name` and `transaction_count`. Categorize `activity_level`: 'Layering Hub' (>5 transactions), 'Active' (3-5), else 'Normal'.
+
+```SQL
+-- My incorrect answer (why im I overcomplicating this T_T)
+WITH AccountStats AS (
+  SELECT a.account_name,
+    COUNT(t.transaction_id) AS transaction_count
+  FROM accounts AS a
+  LEFT JOIN transactions t
+  ON t.account_from = a.account_id
+  GROUP BY a.account_name
+)
+SELECT
+  account_name,
+  transaction_count,
+CASE
+  WHEN transaction_count > 5 THEN 'Layering Hub'
+  WHEN transaction_count >= 3 THEN 'Active'
+ELSE 'Normal'
+END AS activity_level
+FROM AccountStats
+```
+
+```SQL
+-- The correct answer
+SELECT a.account_name, 
+       COUNT(t.transaction_id) AS transaction_count,
+       CASE 
+         WHEN COUNT(t.transaction_id) > 5 THEN 'Layering Hub'
+         WHEN COUNT(t.transaction_id) >= 3 THEN 'Active'
+         ELSE 'Normal'
+         END AS activity_level 
+FROM accounts a 
+LEFT JOIN transactions t 
+ON a.account_id = t.account_from 
+OR a.account_id = t.account_to 
+GROUP BY a.account_id, a.account_name;
+```
+
+**65) The Value Concentration**
+
+Watch for concentration. Spot the bottlenecks by listing `account_name`, `total_volume`, and `percentage` of global volume. Flag `concentration_level`: 'High Concentration' (>20%), 'Medium Concentration' (>10%), else 'Low Concentration'. Sort by total volume descending.
+
+```SQL
+-- My incorrect answer
+SELECT a.account_name,
+       COUNT(t.transaction_id) * SUM(t.amount) AS total_volume,
+       COUNT(t.transaction_id) / SUM(total_volume) * 100 AS percentage,
+CASE
+  WHEN percentage > 20 THEN 'High Concentration'
+  WHEN percentage > 10 THEN 'Medium Concentration'
+ELSE 'Low'
+END AS concentration_level
+FROM accounts AS a
+LEFT JOIN transactions t
+ON a.account_id = t.account_from
+OR a.account_id = t.account_to
+GROUP BY a.account_name
+ORDER BY total_volume ASC
+```
+
+```SQL
+--  The correct answer
+SELECT a.account_name,
+       SUM(t.amount) AS total_volume,
+       ROUND((SUM(t.amount) * 100.0 / (SELECT SUM(amount)
+       FROM transactions)), 2) AS percentage,
+       CASE 
+         WHEN (SUM(t.amount) * 100.0 / (SELECT SUM(amount) FROM transactions)) > 20 THEN 'High Concentration' 
+         WHEN (SUM(t.amount) * 100.0 / (SELECT SUM(amount) FROM transactions)) > 10 THEN 'Medium Concentration' 
+       ELSE 'Low Concentration'
+       END AS concentration_level 
+FROM accounts a 
+JOIN transactions t 
+ON a.account_id = t.account_from 
+GROUP BY a.account_id, a.account_name 
+ORDER BY total_volume DESC;
 ```
