@@ -814,6 +814,8 @@ GROUP BY s.suspect_id, s.name, s.age, s.arrest_count;
 
 ![CASE FILE S06 - Web of Lies](../img/sql-case-files-img/CASE%20FILE%20S06%20-%20Web%20of%20Lies.png)
 
+## Solution
+
 **51) The Network Map**
 
 We've intercepted the dossier. Map the hierarchy by listing the `real_name` of every superior and their subordinate (aliased as `superior` and `subordinate`). Sort by the superior's name.
@@ -1044,6 +1046,8 @@ ORDER BY total_connections DESC, total_communications DESC;
 
 ![CASE FILE S07 - Ghost Accounts](../img/sql-case-files-img/CASE%20FILE%20S07%20-%20Ghost%20Accounts.png)
 
+## Solution
+
 **61) The Risk Assessment**
 
 Financial Crimes needs these categorized. Triage the transfers by listing the `transaction_id` and `amount`. Categorize each as 'High Risk' (>$100k), 'Medium Risk' ($50k-$100k), or 'Low Risk' (<$50k), aliased as `risk_category`.
@@ -1174,4 +1178,322 @@ JOIN transactions t
 ON a.account_id = t.account_from 
 GROUP BY a.account_id, a.account_name 
 ORDER BY total_volume DESC;
+```
+
+``` SQL
+-- Bonus: the CTE way for better performance and readablitiy (Gemini3)
+WITH GlobalData AS (
+    -- Calculate the grand total once so we don't repeat the subquery
+    SELECT SUM(amount) AS grand_total FROM transactions
+),
+AccountTotals AS (
+    -- Calculate individual account volumes
+    SELECT 
+        a.account_name,
+        SUM(t.amount) AS total_volume
+    FROM accounts AS a
+    JOIN transactions AS t ON a.account_id = t.account_from
+    GROUP BY a.account_id, a.account_name
+)
+SELECT 
+    at.account_name,
+    at.total_volume,
+    -- Simple division using the values from our CTEs
+    ROUND((at.total_volume * 100.0 / gd.grand_total), 2) AS percentage,
+    CASE 
+        WHEN (at.total_volume * 100.0 / gd.grand_total) > 20 THEN 'High Concentration'
+        WHEN (at.total_volume * 100.0 / gd.grand_total) > 10 THEN 'Medium Concentration'
+        ELSE 'Low Concentration'
+    END AS concentration_level
+FROM AccountTotals AS at, GlobalData AS gd
+ORDER BY at.total_volume DESC;
+```
+
+**66) The Shell Company Detector**
+
+Build a detector. Profile the shells by listing `company_name`, `registration_date`, `address`, and `is_shell`. Calculate `shell_probability`: 'Confirmed Shell' (if known), 'Highly Suspicious' (PO Box & New [> 2025-01-01]), 'Suspicious' (PO Box OR New), else 'Legitimate'.
+
+```SQL
+SELECT c.company_name,
+       c.registration_date,
+       c.address,
+       c.is_shell,
+CASE
+  WHEN c.is_shell = 1 THEN 'Confirmed Shell'
+  WHEN c.address LIKE '%PO Box%' AND c.registration_date > '2025-01-01' THEN 'Highly Suspicious'
+  WHEN c.address LIKE '%PO Box%' OR c.registration_date > '2025-01-01' THEN 'Suspicious'
+  ELSE 'Legitimate'
+END AS shell_probability
+FROM companies AS c
+```
+
+**67) The Transaction Chain Analysis**
+
+Find the rapid-fire sequences. Trace the chains by listing `transaction_id`, `amount`, `account_to`, and the `next_transaction` ID. Categorize `chain_status`: 'Same Day Chain' (same date), 'Possible Chain' (any next txn), else 'Terminal'. Sort by transaction date.
+
+```SQL
+-- My incorrect answer (even with AI assist)
+SELECT t.transaction_id,
+       t.amount,
+       t.account_to,
+LEAD (t.transaction_id)
+OVER (
+    PARTITION BY t.account_to
+    ORDER BY t.transaction_date, t.transaction_id
+) AS next_transaction,
+CASE
+  WHEN LEAD (t.transaction_id)
+       OVER (
+           PARTITION BY t.account_to
+           ORDER BY t.transaction_date, t.transaction_id
+            ) = t.transaction_date
+  THEN 'Same Day Chain'
+  WHEN LEAD (t.transaction_id)
+       OVER (
+           PARTITION BY t.account_to
+           ORDER BY t.transaction_date
+            ) IS NOT NULL
+  THEN 'Possible Chain'
+ELSE 'Terminal'
+END AS chain_status
+FROM transactions AS t
+ORDER BY t.transaction_date DESC
+```
+
+```SQL
+-- The correct answer
+SELECT t1.transaction_id,
+       t1.amount,
+       t1.account_to,
+       t2.transaction_id AS next_transaction,
+       CASE WHEN t2.transaction_id IS NOT NULL 
+       AND t1.transaction_date = t2.transaction_date THEN 'Same Day Chain' 
+       WHEN t2.transaction_id IS NOT NULL THEN 'Possible Chain' 
+       ELSE 'Terminal' 
+       END AS chain_status
+FROM transactions t1 
+LEFT JOIN transactions t2 
+ON t1.account_to = t2.account_from 
+AND t2.transaction_date >= t1.transaction_date 
+ORDER BY t1.transaction_date;
+```
+
+**68) The Round Number Detector**
+
+Criminals are lazy. Catch them by listing `transaction_id` and `amount`. Categorize `amount_pattern`: 'Multiple of $10K', 'Multiple of $5K', 'Multiple of $1K', else 'Irregular Amount'. Sort by amount descending.
+
+```SQL
+SELECT t.transaction_id,
+       t.amount,
+CASE
+  WHEN t.amount % 10000 = 0 THEN 'Multiple of $10k'
+  WHEN t.amount % 5000 = 0 THEN 'Multiple of $5k'
+  WHEN t.amount % 1000 = 0 THEN 'Multiple of $1k'
+ELSE 'Irregular Amount'
+END AS amount_pattern
+FROM transactions AS t
+ORDER BY t.amount DESC
+```
+
+**69) The Velocity Analysis**
+
+How fast is the cash spinning? Measure the velocity by listing `account_from`, `transaction_date`, and `prev_date`. Categorize `velocity_category`: 'First Transaction', 'Same Day' (if dates match), else 'Different Day'. Sort by account and transaction date.
+
+```SQL
+-- My incorrect answer
+SELECT t1.account_from,
+       t1.transaction_date,
+       t2.transaction_date AS prev_date,
+  CASE
+    WHEN t1.transaction_date = MIN(t2.transaction_date) THEN 'First Transaction'
+    WHEN t1.transaction_date = t2.transaction_date THEN 'Same Day'
+  ELSE 'Different Day'
+END AS velocity_category
+FROM transactions t1 
+LEFT JOIN transactions t2 
+ON t1.account_to = t2.account_from 
+AND t2.transaction_date <= t1.transaction_date
+GROUP BY t1.account_from, t1.transaction_date
+ORDER BY t1.account_from, t1.transaction_date
+```
+
+```SQL
+-- The correct answer (Using window function LAG())
+SELECT account_from,
+       transaction_date,
+       LAG(transaction_date) OVER (
+         PARTITION BY account_from 
+           ORDER BY transaction_date) AS prev_date,
+           CASE WHEN LAG(transaction_date) OVER (
+           PARTITION BY account_from 
+           ORDER BY transaction_date) IS NULL THEN 'First Transaction' 
+           WHEN transaction_date = LAG(transaction_date) 
+           OVER (PARTITION BY account_from 
+           ORDER BY transaction_date) THEN 'Same Day' 
+         ELSE 'Different Day' 
+       END AS velocity_category 
+FROM transactions 
+ORDER BY account_from, transaction_date;
+```
+
+**70) The Laundering Score**
+
+We need a prioritized hit list. Calculate the threat score in a master report listing `transaction_id`, `amount`, `from_type`, `to_type`. Calculate a weighted `risk_score` based on amount, account types, and round numbers. Assign a `risk_category` (Critical/High/Medium/Low). Sort by risk score descending.
+
+```SQL
+-- My AI assisted incorrect answer (The challenge is too short and im too dumb)
+WITH TransactionDetails AS (
+     SELECT
+        t.transaction_id,
+        t.amount,
+        a_from.account_type AS from_type,
+        a_to.account_type AS to_type,
+        -- Round number check
+      CASE WHEN t.amount % 1000 = 0 THEN 1 
+      ELSE 0 
+    END AS is_round
+FROM transactions AS t
+JOIN accounts a_from
+ON t.account_from = a_from.account_id
+JOIN accounts a_to
+ON t.account_to = a_to.account_id
+),
+
+ScoredTransactions AS (
+      SELECT
+          *,
+          (CASE WHEN amount > 50000 THEN 50 ELSE 0 END +
+           CASE WHEN is_round = 1 THEN 30 ELSE 0 END +
+           CASE WHEN from_type = 'Personal' AND to_type = 'Coorporate' THEN 20 ELSE 0 END
+           ) AS risk_score
+FROM TransactionDetails
+)
+
+SELECT
+     transaction_id,
+     amount,
+     from_type,
+     to_type,
+     risk_score,
+     CASE
+         WHEN risk_score >= 80 THEN 'Critical'
+         WHEN risk_score >= 50 THEN 'High'
+         WHEN risk_score >= 20 THEN 'Medium'
+         ELSE 'Low'
+     END AS risk_category
+FROM ScoredTransactions
+ORDER BY risk_score DESC
+```
+
+```SQL
+-- The correct answer (WTF? I think this could be refactor)
+SELECT t.transaction_id, 
+       t.amount, 
+       a_from.account_type AS from_type, 
+       a_to.account_type AS to_type, 
+       (CASE WHEN t.amount > 100000 THEN 3 
+             WHEN t.amount > 50000 THEN 2 
+             ELSE 1 END + 
+             CASE 
+             WHEN a_from.account_type = 'Shell' THEN 3 
+             WHEN a_from.account_type = 'Offshore' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN a_to.account_type = 'Offshore' THEN 3 
+             WHEN a_to.account_type = 'Shell' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN t.amount % 10000 = 0 THEN 2 
+             ELSE 0 END) AS risk_score, 
+             CASE 
+             WHEN (CASE WHEN t.amount > 100000 THEN 3 
+             WHEN t.amount > 50000 THEN 2 
+             ELSE 1 END + 
+             CASE 
+             WHEN a_from.account_type = 'Shell' THEN 3 
+             WHEN a_from.account_type = 'Offshore' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN a_to.account_type = 'Offshore' THEN 3 
+             WHEN a_to.account_type = 'Shell' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN t.amount % 10000 = 0 THEN 2 
+             ELSE 0 END) >= 8 THEN 'Critical Risk' 
+             WHEN (CASE WHEN t.amount > 100000 THEN 3 
+             WHEN t.amount > 50000 THEN 2 
+             ELSE 1 END + 
+             CASE 
+             WHEN a_from.account_type = 'Shell' THEN 3 
+             WHEN a_from.account_type = 'Offshore' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN a_to.account_type = 'Offshore' THEN 3 
+             WHEN a_to.account_type = 'Shell' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN t.amount % 10000 = 0 THEN 2 
+             ELSE 0 END) >= 5 THEN 'High Risk' 
+             WHEN (CASE WHEN t.amount > 100000 THEN 3 
+             WHEN t.amount > 50000 THEN 2 
+             ELSE 1 END + 
+             CASE 
+             WHEN a_from.account_type = 'Shell' 
+             THEN 3 WHEN a_from.account_type = 'Offshore' THEN 2 
+             ELSE 0 END + 
+             CASE 
+             WHEN a_to.account_type = 'Offshore' THEN 3 
+             WHEN a_to.account_type = 'Shell' THEN 2 
+             ELSE 0 END + 
+             CASE WHEN t.amount % 10000 = 0 THEN 2 
+             ELSE 0 END) >= 3 THEN 'Medium Risk' 
+             ELSE 'Low Risk' 
+             END AS risk_category 
+FROM transactions t 
+JOIN accounts a_from 
+ON t.account_from = a_from.account_id 
+JOIN accounts a_to 
+ON t.account_to = a_to.account_id 
+ORDER BY risk_score DESC;
+```
+
+*Bonus: Optimized version refactored by Gemini3*
+
+```SQL
+WITH BaseRisk AS (
+    -- Step 1: Calculate the raw score once
+    SELECT 
+        t.transaction_id, 
+        t.amount, 
+        a_from.account_type AS from_type, 
+        a_to.account_type AS to_type,
+        (
+          -- Amount Weight
+          CASE WHEN t.amount > 100000 THEN 3 
+               WHEN t.amount > 50000 THEN 2 ELSE 1 END + 
+          -- Sender Weight
+          CASE WHEN a_from.account_type = 'Shell' THEN 3 
+               WHEN a_from.account_type = 'Offshore' THEN 2 ELSE 0 END + 
+          -- Receiver Weight
+          CASE WHEN a_to.account_type = 'Offshore' THEN 3 
+               WHEN a_to.account_type = 'Shell' THEN 2 ELSE 0 END + 
+          -- Round Number Weight
+          CASE WHEN t.amount % 10000 = 0 THEN 2 ELSE 0 END
+        ) AS risk_score
+    FROM transactions t
+    JOIN accounts a_from ON t.account_from = a_from.account_id
+    JOIN accounts a_to ON t.account_to = a_to.account_id
+)
+
+-- Step 2: Reference the calculated score to assign categories
+SELECT 
+    *,
+    CASE 
+        WHEN risk_score >= 8 THEN 'Critical Risk'
+        WHEN risk_score >= 5 THEN 'High Risk'
+        WHEN risk_score >= 3 THEN 'Medium Risk'
+        ELSE 'Low Risk'
+    END AS risk_category
+FROM BaseRisk
+ORDER BY risk_score DESC;
 ```
