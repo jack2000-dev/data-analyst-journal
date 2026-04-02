@@ -1497,3 +1497,40 @@ SELECT
 FROM BaseRisk
 ORDER BY risk_score DESC;
 ```
+
+# CASE FILE: S08 - Public Doubts
+
+![CASE FILE S08 - Public Doubts](../img/sql-case-files-img/CASE%20FILE%20S08%20-%20Public%20Doubts.png)
+
+## Solution
+
+**71) Above Average Contracts**
+
+Tip says contracts are padded. Find the ones blowing the average. List the `contract_id`, `vendor_name`, and `contract_value` for any contract that exceeds the city-wide average contract value.
+
+```SQL
+SELECT 
+    contract_id, 
+    vendor_name, 
+    contract_value
+FROM contracts
+WHERE contract_value > (SELECT AVG(contract_value)FROM contracts)
+```
+
+**72) The Prolific Approver**
+
+Who is rubber-stamping deals? Spot the excessive approvers by listing the `approving_official` and their `contracts_approved` count for anyone approving more deals than the average official.
+
+```SQL
+-- CTE
+WITH OfficialCounts AS (
+    SELECT 
+        approving_official, 
+        COUNT(contract_id) AS contracts_approved
+    FROM contracts
+    GROUP BY approving_official
+)
+SELECT approving_official, contracts_approved
+FROM OfficialCounts
+WHERE contracts_approved > (SELECT AVG(contracts_approved) FROM OfficialCounts)
+```
