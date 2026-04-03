@@ -1534,3 +1534,85 @@ SELECT approving_official, contracts_approved
 FROM OfficialCounts
 WHERE contracts_approved > (SELECT AVG(contracts_approved) FROM OfficialCounts)
 ```
+
+**73) The Department Spending Spree**
+
+Audit the departments. Who is spending double the average? List the `department` and `total_spending` for any department spending more than double the average departmental budget.
+
+```SQL
+WITH DeptTotals AS (
+    SELECT 
+        c.department, 
+        SUM(c.contract_value) AS total_spending
+    FROM contracts AS c
+    GROUP BY c.department
+)
+SELECT 
+    department, 
+    total_spending
+FROM DeptTotals
+WHERE total_spending > (SELECT AVG(total_spending) * 2 FROM DeptTotals)
+```
+
+**74) The Vendor Favoritism**
+
+Nepotism check. Match official names to vendor owners. Expose it by listing `contract_id`, `vendor_name`, `approving_official`, and `owner_name` where the vendor's owner shares a **partial name** (e.g. last name) with the official.
+
+```SQL
+-- My incorrect answer
+SELECT c.contract_id,
+       c.vendor_name,
+       c.approving_official,
+       v.owner_name
+FROM contracts AS c
+JOIN vendors v ON c.vendor_name = v.company_name
+WHERE LOWER(c.approving_official) LIKE LOWER('%' || v.owner_name || '%') 
+OR LOWER(v.owner_name) LIKE LOWER('%' || c.approving_official || '%')
+```
+
+```SQL
+-- The correct answer
+SELECT c.contract_id,
+       c.vendor_name,
+       c.approving_official,
+       v.owner_name 
+FROM contracts c 
+JOIN vendors v 
+ON c.vendor_name = v.company_name 
+WHERE EXISTS (SELECT 1 FROM vendors v2 WHERE v2.company_name = c.vendor_name AND (v2.owner_name LIKE '%Hayes%' OR v2.owner_name LIKE '%Foster%'));
+```
+
+**75) The Payment Timing**
+
+Check the speed. Who is getting paid before the ink is dry? Flag the fast-tracking by listing `contract_id`, `vendor_name`, `approval_date`, and `payment_date`. Calculate `days_to_payment` for any deal paid out faster than the **global** average processing time.
+
+```SQL
+-- My incorrect answer
+SELECT c.contract_id,
+       c.vendor_name,
+       c.approval_date,
+       p.payment_date,
+       (p.payment_date - c.approval_date) AS days_to_payment
+FROM contracts AS c
+JOIN payments p ON c.contract_id = p.contract_id
+WHERE (p.payment_date - c.approval_date) < (
+    SELECT AVG(p2.payment_date - c2.approval_date)
+    FROM contracts c2
+    JOIN payments p2 ON c2.contract_id = p2.contract_id
+)
+```
+
+```SQL
+-- The correct answer
+SELECT c.contract_id, 
+       c.vendor_name,
+       c.approval_date,
+       p.payment_date,
+       JULIANDAY(p.payment_date) - JULIANDAY(c.approval_date) AS days_to_payment 
+FROM contracts c 
+JOIN payments p 
+ON c.contract_id = p.contract_id 
+WHERE JULIANDAY(p.payment_date) - JULIANDAY(c.approval_date) < (SELECT AVG(JULIANDAY(p2.payment_date) - JULIANDAY(c2.approval_date)) 
+FROM contracts c2 
+JOIN payments p2 ON c2.contract_id = p2.contract_id);
+```
