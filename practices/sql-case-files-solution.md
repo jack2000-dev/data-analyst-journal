@@ -1616,3 +1616,63 @@ WHERE JULIANDAY(p.payment_date) - JULIANDAY(c.approval_date) < (SELECT AVG(JULIA
 FROM contracts c2 
 JOIN payments p2 ON c2.contract_id = p2.contract_id);
 ```
+
+**76) The Salary Mismatch**
+
+Salary mismatch. Why is a mid-level manager signing million-dollar checks? Check the authority limits by listing `contract_id`, `vendor_name`, `contract_value`, `approving_official`, and `salary` where the contract value is more than 10x the official's annual salary.
+
+```SQL
+SELECT c.contract_id,
+       c.vendor_name,
+       c.contract_value,
+       c.approving_official,
+       o.salary
+FROM contracts AS c
+JOIN officials o 
+ON c.department = o.department
+WHERE c.contract_value > o.salary * 12
+```
+
+**77) The Vendor Concentration**
+
+Favoritism. Who is funneling half their budget to a single friend? Detect vendor bias by identifying if a single vendor gets >30% of an official's total approval budget. List `approving_official`, `vendor_name`, `vendor_total`, `official_total`, and `percentage`. Sort by percentage descending.
+
+```SQL
+-- My incorrect answer
+WITH BudgetSummary AS (
+SELECT
+     approving_official,
+     vendor_name,
+     SUM(contract_value) AS vendor_total,
+     SUM(SUM(contract_value)) OVER(PARTITION BY approving_official) AS official_total
+FROM contracts
+GROUP BY approving_official, vendor_name
+)
+SELECT 
+     DISTINCT approving_official,
+     vendor_name,
+     vendor_total,
+     official_total,
+     (vendor_total * 100.0 / official_total) AS percentage
+FROM BudgetSummary
+WHERE (vendor_total * 100.0 / official_total) > 30
+ORDER BY percentage DESC
+```
+
+```SQL
+-- The correct answer
+SELECT approving_official, 
+       vendor_name,
+       vendor_total,
+       official_total,
+       ROUND((vendor_total * 100.0 / official_total),2) AS percentage 
+FROM (SELECT c1.approving_official,
+             c1.vendor_name,
+             SUM(c1.contract_value) AS vendor_total,
+    (SELECT SUM(c2.contract_value) 
+    FROM contracts c2 
+    WHERE c2.approving_official = c1.approving_official) AS official_total FROM contracts c1 
+GROUP BY c1.approving_official, c1.vendor_name) 
+WHERE (vendor_total * 100.0 / official_total) > 30 
+ORDER BY percentage DESC;
+```
