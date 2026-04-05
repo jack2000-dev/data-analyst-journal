@@ -1676,3 +1676,37 @@ GROUP BY c1.approving_official, c1.vendor_name)
 WHERE (vendor_total * 100.0 / official_total) > 30 
 ORDER BY percentage DESC;
 ```
+
+**78) The New Vendor Advantage**
+
+Pop-up vendors. Big contracts to companies born yesterday? Investigate these pop-ups by listing `contract_id`, `vendor_name`, `contract_value`, `approval_date`, and `registration_date`. Calculate `days_since_registration` for vendors less than a year old at the time of approval.
+
+```SQL
+-- My incorrect answer
+SELECT c.contract_id,
+       c.vendor_name,
+       c.contract_value,
+       c.approval_date,
+       v.registration_date,
+       (c.approval_date - v.registration_date) AS days_since_registration
+FROM contracts c
+JOIN vendors v
+ON c.vendor_name = v.company_name
+WHERE (c.approval_date - v.registration_date) < 365
+AND (c.approval_date - v.registration_date) >= 0
+ORDER BY days_since_registration ASC
+```
+
+```SQL
+-- The correct answer
+SELECT c.contract_id,
+       c.vendor_name,
+       c.contract_value,
+       c.approval_date,
+       v.registration_date,
+       JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date) AS days_since_registration 
+FROM contracts c 
+JOIN vendors v 
+ON c.vendor_name = v.company_name
+WHERE JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date) < 365;
+```
