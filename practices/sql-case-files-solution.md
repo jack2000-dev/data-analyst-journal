@@ -1710,3 +1710,110 @@ JOIN vendors v
 ON c.vendor_name = v.company_name
 WHERE JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date) < 365;
 ```
+
+**79) The Approval Authority**
+
+Authority breach. Why is IT signing for Public Works? Audit the jurisdiction by listing `contract_id`, `vendor_name`, `contract_value`, `contract_dept`, `approving_official`, `official_dept`, and `position` for approvals outside the official's department or exceeding 2x their position's **average contract value**.
+
+```SQL
+WITH PositionAvg AS (
+SELECT o.position,
+       AVG(c.contract_value) AS avg_pos_val
+FROM officials AS o
+JOIN contracts c
+ON o.name = c.approving_official
+GROUP BY o.position
+)
+
+SELECT c.contract_id, 
+       c.vendor_name,
+       c.contract_value,
+       c.department AS contract_dept,
+       c.approving_official,
+       o.department AS official_dept,
+       o.position
+FROM contracts c
+JOIN officials o
+ON c.approving_official = o.name
+JOIN PositionAvg pa
+ON o.position = pa.position
+WHERE contract_dept != official_dept
+OR c.contract_value > (pa.avg_pos_val * 2)
+```
+
+**80) The Corruption Network**
+
+Build the RICO case. Map the full network of corruption. Generate a master report listing `contract_id`, `vendor_name`, `contract_value`, `approving_official`, and `owner_name`. Flag suspicious activity: `relationship_flag` (Name Match), `price_flag` (Overpriced > 2x avg), and `vendor_age_flag` (New Vendor < 1 yr). Include `official_contract_count`. Sort by contract value descending.
+
+```SQL
+-- My incorrect answer
+WITH GlobalMetrics AS (
+     SELECT AVG(contract_value) AS global_avg FROM contracts
+),
+OfficialStats AS (
+      SELECT approving_official, COUNT(contract_id) AS official_contract_count
+FROM contracts
+GROUP BY approving_official
+),
+
+AuditBase AS (
+SELECT c.contract_id,
+       c.vendor_name,
+       c.contract_value,
+       c.approving_official,
+       v.owner_name,
+       os.official_contract_count,
+       CASE
+       WHEN c.approving_official = v.owner_name THEN 'Name Match'
+ELSE NULL
+END AS relationship_flag,
+       CASE
+       WHEN c.contract_value > (SELECT global_avg * 2 FROM GlobalMetrics) THEN 'Overpriced' 
+ELSE NULL
+END AS price_flag,
+       CASE 
+       WHEN (JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date)) < 365 THEN 'New Vendor' ELSE NULL END AS vendor_age_flag
+FROM contracts AS c
+JOIN vendors v 
+ON c.vendor_name = v.company_name
+JOIN OfficialStats os 
+ON c.approving_official = os.approving_official 
+)
+SELECT *
+FROM AuditBase
+ORDER BY contract_value DESC
+```
+
+```SQL
+-- The correct answer
+SELECT c.contract_id, 
+       c.vendor_name, 
+       c.contract_value, 
+       c.approving_official, 
+       v.owner_name, 
+       CASE 
+       WHEN v.owner_name 
+       LIKE '%' || SUBSTR(c.approving_official, INSTR(c.approving_official, ' ') + 1) || '%' THEN 'Name Match' 
+       ELSE 'No Match' 
+       END AS relationship_flag, 
+       CASE 
+       WHEN c.contract_value > (SELECT AVG(contract_value) * 2 FROM contracts) THEN 'Overpriced' 
+       ELSE 'Normal' 
+       END AS price_flag, 
+       CASE 
+       WHEN JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date) < 365 THEN 'New Vendor' 
+       ELSE 'Established' 
+       END AS vendor_age_flag, 
+
+(SELECT COUNT(*) 
+FROM contracts c2 
+WHERE c2.approving_official = c.approving_official) AS official_contract_count 
+
+FROM contracts c 
+JOIN vendors v 
+ON c.vendor_name = v.company_name 
+WHERE (v.owner_name LIKE '%Hayes%' OR v.owner_name LIKE '%Foster%') 
+OR c.contract_value > (SELECT AVG(contract_value) * 2 FROM contracts) 
+OR JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date) < 365 
+ORDER BY c.contract_value DESC;
+```
