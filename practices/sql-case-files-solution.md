@@ -1817,3 +1817,107 @@ OR c.contract_value > (SELECT AVG(contract_value) * 2 FROM contracts)
 OR JULIANDAY(c.approval_date) - JULIANDAY(v.registration_date) < 365 
 ORDER BY c.contract_value DESC;
 ```
+
+# CASE FILE: S09 - Insider Threat
+
+![CASE FILE S09 - Insider Threat@2x.png](../img/sql-case-files-img/CASE%20FILE%20S09%20-%20Insider%20Threat@2x.png)
+
+## Solution
+
+**81) The Access Timeline**
+
+Sequence the logs. I need to see the order of operations for every suspect. Number them by listing `employee_id`, `file_path`, and `access_time`, assigning an `access_sequence` number ordered chronologically per employee.
+
+```SQL
+SELECT a.employee_id,
+       a.file_path,
+       a.access_time,
+       ROW_NUMBER() 
+       OVER (PARTITION BY a.employee_id
+              ORDER BY access_time ASC) AS access_sequence
+FROM access_logs AS a
+ORDER BY employee_id, access_time ASC
+```
+
+**82) The Previous Access**
+
+Context is everything. Look backward by listing `employee_id`, `file_path`, and `access_time`. Include the `previous_file` and `previous_time` for each entry within the employee's history.
+
+```SQL
+SELECT employee_id,
+       file_path,
+       access_time,
+  LAG (file_path, 1) 
+  OVER (PARTITION BY employee_id
+  ORDER BY access_time ASC
+  ) AS previous_file,
+  LAG (access_time, 1) 
+  OVER (PARTITION BY employee_id
+  ORDER BY access_time ASC
+  ) AS previous_time
+FROM access_logs
+ORDER BY employee_id, access_time
+```
+
+**83) The Next Target**
+
+Trace the path. Look forward by listing `employee_id`, `file_path`, and `access_time`. Include the `next_file` and `next_time` for each entry within the employee's history.
+
+```SQL
+SELECT employee_id,
+       file_path,
+       access_time,
+LEAD(file_path, 1) OVER (
+        PARTITION BY employee_id 
+        ORDER BY access_time ASC
+    ) AS next_file,
+LEAD(access_time, 1) OVER (
+        PARTITION BY employee_id 
+        ORDER BY access_time ASC
+    ) AS next_time
+FROM access_logs
+```
+
+**84) The Access Gaps**
+
+Rapid access means bulk theft. Check the gaps by listing `employee_id`, `file_path`, and `access_time`. Calculate `previous_time` and the `minutes_diff` since the last access for that employee.
+
+```SQL
+-- CTE for previous_time
+WITH prevTime AS (
+       SELECT
+       employee_id,
+       file_path,
+       access_time,
+       LAG(access_time, 1) OVER(
+       PARTITION BY employee_id
+       ORDER BY access_time ASC
+       ) AS previous_time
+FROM access_logs
+)
+SELECT employee_id,
+       file_path,
+       access_time,
+       previous_time,
+       ROUND((JULIANDAY(access_time) - JULIANDAY(previous_time)) * 1440, 2) AS minutes_diff
+FROM prevTime
+```
+
+**85) The Ranking System**
+
+Who is the heaviest user? Rank the users by listing `employee_id` and `total_accesses`. Assign both an `access_rank` and `dense_rank` based on total activity, from highest to lowest.
+
+```SQL
+SELECT employee_id,
+       COUNT(access_time) AS total_accesses,
+       RANK() OVER(
+       ORDER BY COUNT(access_time) DESC
+       ) AS access_rank,
+       DENSE_RANK() OVER(
+       ORDER BY COUNT(access_time) DESC
+       ) AS dense_rank
+FROM access_logs
+GROUP BY employee_id
+ORDER BY total_accesses DESC
+```
+
