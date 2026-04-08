@@ -1921,3 +1921,27 @@ GROUP BY employee_id
 ORDER BY total_accesses DESC
 ```
 
+**86) The Running Total**
+
+If that line goes vertical, we have a breach. Watch the running volume by listing `access_time`, `employee_id`, and `file_path`, calculating a cumulative `running_count` of all file accesses over time.
+
+```SQL
+-- My incorrect answer
+SELECT 
+    access_time,
+    employee_id,
+    file_path,
+    COUNT(*) OVER (ORDER BY access_time) AS running_count
+FROM access_logs
+ORDER BY access_time
+```
+
+```SQL
+-- The correct answer
+SELECT access_time, 
+       employee_id, 
+       file_path, 
+       COUNT(*) 
+       OVER (ORDER BY access_time ROWS UNBOUNDED PRECEDING) AS running_count FROM access_logs 
+ORDER BY access_time;
+```
