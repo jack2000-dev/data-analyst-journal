@@ -1945,3 +1945,18 @@ SELECT access_time,
        OVER (ORDER BY access_time ROWS UNBOUNDED PRECEDING) AS running_count FROM access_logs 
 ORDER BY access_time;
 ```
+
+**87) The Percentile Analysis**
+
+Isolate the heavy hitters. Segment the workforce by listing `employee_id` and `total_accesses`. Divide employees into 4 `quartile` groups based on their activity volume. Sort by total accesses descending.
+
+```SQL
+SELECT employee_id,
+       COUNT(access_time) AS total_accesses,
+       NTILE(4) OVER (
+             ORDER BY COUNT(access_time)) AS quartile
+FROM access_logs
+GROUP BY employee_id
+ORDER BY total_accesses DESC
+```
+
