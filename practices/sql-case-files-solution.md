@@ -1960,3 +1960,19 @@ GROUP BY employee_id
 ORDER BY total_accesses DESC
 ```
 
+**88) The Moving Average**
+
+Spot the spikes above the baseline. Smooth the noise by listing `access_date` and `daily_count`. Calculate the `moving_avg_3day` (current day + 2 previous days) for file access counts.
+
+```SQL
+SELECT DATE(access_time) AS access_date,
+       COUNT(*) AS daily_count,
+       -- MA calc
+       AVG(COUNT(*)) OVER (
+           ORDER BY CAST(access_time AS DATE)
+           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW -- 2 preceding = 2 previous days and current row = current day
+       ) AS moving_avg_3day
+FROM access_logs
+GROUP BY 1 -- Reprsent first column, which is access_date
+ORDER BY 1
+```
