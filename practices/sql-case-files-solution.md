@@ -1976,3 +1976,158 @@ FROM access_logs
 GROUP BY 1 -- Reprsent first column, which is access_date
 ORDER BY 1
 ```
+
+**89) The First and Last**
+
+Get the bookends of the operation. Define the window for each `employee_id` by identifying their `first_file` and `first_time`, as well as their `last_file` and `last_time`.
+
+```SQL
+-- My incorrect answer
+SELECT employee_id,
+  FIRST_VALUE (file_path) OVER (  
+    PARTITION BY employee_id 
+    ORDER BY access_time ASC
+  ) AS first_file,
+  FIRST_VALUE (access_time) OVER (  
+    PARTITION BY employee_id 
+    ORDER BY access_time ASC
+  ) AS first_time,
+  LAST_VALUE (file_path) OVER (  
+    PARTITION BY employee_id 
+    ORDER BY access_time DESC
+  ) AS last_file,
+  LAST_VALUE (access_time) OVER (  
+    PARTITION BY employee_id 
+    ORDER BY access_time DESC
+  ) AS last_time
+FROM access_logs
+GROUP BY employee_id
+```
+
+```SQL
+-- The correct answer
+SELECT DISTINCT employee_id, 
+       FIRST_VALUE(file_path) OVER (
+         PARTITION BY employee_id 
+         ORDER BY access_time 
+         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS first_file, 
+       FIRST_VALUE(access_time) OVER (
+         PARTITION BY employee_id 
+         ORDER BY access_time 
+         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS first_time, 
+       LAST_VALUE(file_path) OVER (
+         PARTITION BY employee_id 
+         ORDER BY access_time 
+         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS last_file, 
+       LAST_VALUE(access_time) OVER (
+         PARTITION BY employee_id 
+         ORDER BY access_time 
+         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS last_time 
+FROM access_logs 
+ORDER BY employee_id;
+```
+
+**90) The Insider Profile**
+
+We need a name. Profile the insider by generating a dossier including `name`, `department`, `clearance_level`, `total_accesses`, `access_rank`, `first_access`, `last_access`, `hours_span`, and `avg_gap_minutes`. Assign a `threat_level`: 'HIGH RISK' (>5 accesses), 'MEDIUM RISK' (span > 12 hrs), else 'LOW RISK'. Sort by total accesses descending.
+
+```SQL
+-- My incorrect answer
+WITH EmployeeBase AS (
+     SELECT
+         e.name,
+         e.department,
+         e.clearance_level,
+         a.employee_id,
+         a.access_time,
+         COUNT(*) OVER(PARTITION BY a.employee_id) AS total_accesses,
+         MIN(a.access_time) OVER(PARTITION BY a.employee_id) AS first_access,
+         MAX(a.access_time) OVER(PARTITION BY a.employee_id) AS last_access
+      FROM employees AS e
+      JOIN access_logs a ON e.employee_id = a.employee_id
+),
+
+DossierData AS (
+       SELECT DISTINCT
+            name,
+            department,
+            clearance_level,
+            total_accesses,
+            first_access,
+            last_access,
+            (JULIANDAY(last_access) - JULIANDAY(first_access)) * 24 AS hours_span,
+            CASE
+               WHEN total_accesses > 1
+               THEN ((JULIANDAY(last_access) - JULIANDAY(first_access)) * 1440) / (total_accesses - 1)
+               ELSE 0
+            END AS avg_gap_minutes
+        FROM EmployeeBase
+)
+SELECT
+     *,
+     DENSE_RANK() OVER (ORDER BY total_accesses DESC) AS access_rank,
+     CASE
+        WHEN total_accesses > 5 THEN 'HIGH RISK'
+        WHEN hours_span > 12 THEN 'MEDIUM RISK'
+        ELSE 'LOW RISK'
+     END AS threat_level
+FROM DossierData
+ORDER BY total_accesses DESC
+```
+
+```SQL
+-- The correct answer (with explanation from Gemini3)
+
+SELECT
+    e.name,
+    e.department,
+    e.clearance_level,
+    access_stats.total_accesses,
+    access_stats.access_rank,
+    access_stats.first_access,
+    access_stats.last_access,
+    access_stats.hours_span,
+    access_stats.avg_gap_minutes,
+    -- STEP 3: Assign threat levels based on behavioral thresholds
+    CASE 
+        WHEN access_stats.total_accesses > 5 THEN 'HIGH RISK'   -- Excessive scan volume
+        WHEN access_stats.hours_span > 12 THEN 'MEDIUM RISK'   -- Abnormally long active period
+        ELSE 'LOW RISK'
+    END AS threat_level
+FROM employees AS e
+JOIN (
+    /* STEP 2: Aggregate the raw log data into per-employee metrics */
+    SELECT
+        employee_id,
+        COUNT(*) AS total_accesses,
+        -- Rank employees by activity volume (1 = most active)
+        RANK() OVER (ORDER BY COUNT(*) DESC) AS access_rank,
+        MIN(access_time) AS first_access,
+        MAX(access_time) AS last_access,
+        -- Calculate total time between first and last scan (Julian Days * 24 = Hours)
+        ROUND((JULIANDAY(MAX(access_time)) - JULIANDAY(MIN(access_time))) * 24, 2) AS hours_span,
+        -- Average the individual gaps calculated in the inner subquery
+        ROUND(AVG(gap_minutes), 2) AS avg_gap_minutes
+    FROM (
+        /* STEP 1: Calculate the time difference between every scan and the previous one */
+        SELECT
+            employee_id,
+            access_time,
+            -- LAG() looks at the previous row's timestamp for the same employee
+            -- Result is converted from Julian Days to Minutes (* 24 * 60)
+            (JULIANDAY(access_time) - JULIANDAY(LAG(access_time) OVER (
+                PARTITION BY employee_id 
+                ORDER BY access_time
+            ))) * 24 * 60 AS gap_minutes
+        FROM access_logs
+    ) AS gaps
+    GROUP BY employee_id
+) AS access_stats ON e.employee_id = access_stats.employee_id
+ORDER BY 
+    access_stats.total_accesses DESC, 
+    access_stats.hours_span DESC;
+```
