@@ -2131,3 +2131,23 @@ ORDER BY
     access_stats.total_accesses DESC, 
     access_stats.hours_span DESC;
 ```
+
+# CASE FILE: S10 - The Mastermind
+
+![CASE FILE S10 - The Mastermind@2x.png](/img/sql-case-files-img/CASE%20FILE%20S10%20-%20The%20Mastermind@2x.png)
+
+## Solution
+
+**91) The Evidence Vault**
+
+Nine seasons lead to this. Organize the board. Create a CTE `priority_suspects` for anyone with a `known_alias`. List their full dossier.
+
+```SQL
+WITH priority_suspects AS (
+     SELECT *
+     FROM suspects 
+     WHERE known_alias IS NOT NULL
+)
+SELECT *
+FROM priority_suspects
+```
