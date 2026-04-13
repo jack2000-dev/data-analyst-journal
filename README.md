@@ -56,9 +56,11 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 [4 Examples of Business Analytics in Action](https://online.hbs.edu/blog/post/business-analytics-examples)
 # Projects
 - [Bellabeat Case Study](https://www.kaggle.com/code/jackwp/bellabeat-case-study-in-r) - Google Data Analytics Capstone Project
+- [Bullrun Analysis Dashboard v1.0.0](https://dune.com/jack_2000/3rd-bullrun-analysis) - Dune dashboard for crypto bullrun analysis (currently in beta phase)
 
 # Practices
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginner
+
 # Timeline
 
 | Day   | Course                                                                              | Progress                                                                                                                                                                                                                                                                                                                                  |
