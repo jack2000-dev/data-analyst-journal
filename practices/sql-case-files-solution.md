@@ -2151,3 +2151,34 @@ WITH priority_suspects AS (
 SELECT *
 FROM priority_suspects
 ```
+
+**92) The Connection Matrix**
+
+We need the full picture. Cross-reference the files by creating two CTEs: one for suspects with aliases ('Has Alias') and one without ('No Alias'). Union them to list `suspect_id`, `name`, `known_alias`, and `status`. Sort by status, then name.
+
+```SQL
+WITH has_alias AS (
+    SELECT 
+          suspect_id,
+          name,
+          known_alias,
+          'Has Alias' AS status
+    FROM suspects
+    WHERE known_alias IS NOT NULL
+), 
+no_alias AS (
+SELECT 
+          suspect_id,
+          name,
+          known_alias,
+          'No Alias' AS status
+    FROM suspects
+    WHERE known_alias IS NULL
+)
+
+SELECT * FROM has_alias
+UNION ALL
+SELECT * FROM no_alias
+ORDER BY status, name
+```
+
