@@ -2182,3 +2182,40 @@ SELECT * FROM no_alias
 ORDER BY status, name
 ```
 
+**93) The Hierarchy Analysis**
+
+Trace the chain of command from the penthouse to the street. Map the hierarchy using a recursive CTE to trace links from mentors to subordinates. List `suspect_id`, `name`, `known_alias`, `role`, and their `level` in the organization. Sort by level.
+
+```SQL
+WITH org_chart AS (
+  SELECT
+   suspect_id,
+   name,
+   known_alias,
+   role,
+   1 AS level
+FROM suspects
+WHERE mentor_id IS NULL
+
+UNION ALL
+
+SELECT
+   s.suspect_id,
+   s.name,
+   s.known_alias,
+   s.role,
+   oc.level + 1 AS level
+FROM suspects s
+INNER JOIN org_chart oc
+ON s.mentor_id = oc.suspect_id
+)
+
+SELECT
+   suspect_id,
+   name,
+   known_alias,
+   role,
+   level
+FROM org_chart
+ORDER BY level
+```
