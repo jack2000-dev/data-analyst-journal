@@ -2219,3 +2219,34 @@ SELECT
 FROM org_chart
 ORDER BY level
 ```
+
+**94) The Evidence Aggregation**
+
+How dangerous are they? Run the stats by creating a CTE to calculate aggregate suspect metrics. Report `total_suspects`, `aliased_suspects`, `clean_suspects`, `alias_percentage`, and a `threat_assessment`: 'High Risk Organization' (>50% aliased), 'Medium Risk Organization' (>25%), else 'Low Risk Organization'.
+
+```SQL
+WITH metrics AS (
+    SELECT
+    COUNT(suspect_id) AS total_suspects,
+    COUNT(known_alias) AS aliased_suspects,
+    SUM(
+       CASE
+         WHEN known_alias IS NULL
+         THEN 1
+         ELSE 0
+         END) AS clean_suspects
+    FROM suspects
+)
+
+SELECT
+     total_suspects,
+     aliased_suspects,
+     clean_suspects,
+     (aliased_suspects / total_suspects * 100) AS alias_percentage,
+     CASE
+        WHEN (aliased_suspects / total_suspects * 100) > 50     THEN 'High Risk Organization'
+        WHEN (aliased_suspects / total_suspects * 100) > 25     THEN 'Medium Risk Organization'
+        ELSE 'Low Risk Organization'
+     END AS threat_assessment
+FROM metrics
+```
