@@ -8,6 +8,7 @@ This repository is my data analyst journal to record and keep track of my learni
 - [Kaggle (My profile)](https://www.kaggle.com/jackwp)
 - [Data community](https://towardsdatascience.com/)
 - [Data analyst roadmap](https://github.com/mtahiraslan/data-analyst-roadmap)
+- [Data Project Documentation Template](https://github.com/jack2000-dev/data-project-documentation-template)
 # Techstacks
 ## Spreadsheets
 - Google Sheets
