@@ -2250,3 +2250,30 @@ SELECT
      END AS threat_assessment
 FROM metrics
 ```
+
+**95) The Cross-Case Analysis**
+
+We take down the kings first. Prioritize targets by creating a CTE to calculate `total_severity` from evidence logs and rank suspects. List `name`, `known_alias`, `total_severity`, and `severity_rank` for the top 3. Sort by severity rank.
+
+```SQL
+WITH suspect_priority AS (
+  SELECT
+    s.name,
+    s.known_alias,
+    SUM(e.severity_score) AS total_severity,
+    RANK() OVER (ORDER BY SUM(e.severity_score) DESC) AS severity_rank
+FROM suspects AS s
+JOIN evidence_log e
+ON s.suspect_id = e.suspect_id
+GROUP BY s.suspect_id, s.name, s.known_alias
+)
+
+SELECT
+  name,
+  known_alias,
+  total_severity,
+  severity_rank
+FROM suspect_priority
+WHERE severity_rank <= 3
+ORDER BY severity_rank
+```
