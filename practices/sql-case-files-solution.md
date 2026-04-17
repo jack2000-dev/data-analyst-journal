@@ -2277,3 +2277,44 @@ FROM suspect_priority
 WHERE severity_rank <= 3
 ORDER BY severity_rank
 ```
+
+**96) The Timeline Reconstruction**
+
+Pinpoint the escalation. Reconstruct the timeline by creating a CTE to group evidence by `month`. List `month`, `evidence_count`, `total_severity`, and the `previous_month_count` to show the trend. Sort chronologically.
+
+```SQL
+-- My incorrect answer
+WITH timeline AS (
+    SELECT 
+       CAST(strftime('%m', e.date_collected) AS INTEGER) AS month,
+       COUNT(e.evidence_id) AS evidence_count,
+       SUM(e.severity_score) AS total_severity
+    FROM evidence_log AS e
+    GROUP BY month
+)
+SELECT
+   month,
+   evidence_count,
+   total_severity,
+   LAG(evidence_count) OVER (ORDER BY month) AS previous_month_count
+FROM timeline
+ORDER BY month
+```
+
+```SQL
+-- The correct answer 
+WITH monthly_evidence AS (
+    SELECT strftime('%Y-%m', date_collected) AS month,
+      COUNT(*) AS evidence_count,
+      SUM(severity_score) AS total_severity
+    FROM evidence_log 
+    GROUP BY strftime('%Y-%m', date_collected)
+) 
+SELECT 
+    month,
+    evidence_count,
+    total_severity,
+    LAG(evidence_count) OVER (ORDER BY month) AS previous_month_count 
+FROM monthly_evidence 
+ORDER BY month;
+```
