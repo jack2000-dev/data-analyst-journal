@@ -2318,3 +2318,52 @@ SELECT
 FROM monthly_evidence 
 ORDER BY month;
 ```
+
+**97) The Network Mapping**
+
+Who is working with whom? Map the clusters using CTEs to model the network. List `relationship_type`, `link_count`, and the specific `pairs` of suspects involved, ranked by frequency.
+
+```SQL
+-- My incorrect answer
+WITH network AS (
+  SELECT
+  relationship_type,
+  COUNT(associate_id) AS link_count,
+CASE
+  WHEN suspect_a_id = suspect_b_id
+  THEN 1 ELSE 0
+  END AS pairs
+  FROM associates
+  GROUP BY relationship_type
+)
+
+SELECT
+  relationship_type,
+  link_count,
+  pairs
+FROM network
+ORDER BY link_count DESC
+```
+
+```SQL
+-- The correct answer
+WITH network_links AS (
+    SELECT 
+      s1.name AS suspect_a, 
+      s2.name AS suspect_b, 
+      a.relationship_type, 
+      a.strength 
+    FROM associates a 
+    JOIN suspects s1 
+    ON a.suspect_a_id = s1.suspect_id 
+    JOIN suspects s2 
+    ON a.suspect_b_id = s2.suspect_id
+) 
+SELECT 
+    relationship_type, 
+    COUNT(*) AS link_count, 
+    GROUP_CONCAT(suspect_a || '-' || suspect_b, ', ') AS pairs 
+FROM network_links 
+GROUP BY relationship_type 
+ORDER BY link_count DESC;
+```
