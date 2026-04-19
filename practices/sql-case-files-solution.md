@@ -2367,3 +2367,86 @@ FROM network_links
 GROUP BY relationship_type 
 ORDER BY link_count DESC;
 ```
+
+**98) The Risk Assessment Matrix**
+
+No surprises. Assess the total threat using multiple CTEs to combine evidence and network scores into a `total_risk`. List suspect details and assign a `risk_level`: 'CRITICAL' (>30), 'HIGH' (>15), else 'MEDIUM'. Sort by total risk descending.
+
+```SQL
+-- My incorrect answer
+WITH evidence_score AS (
+  SELECT 
+     suspect_id,
+     SUM(severity_score) AS total_severity
+     FROM evidence_log
+     GROUP BY suspect_id
+),
+network_score AS (
+  SELECT
+     suspect_id,
+     COUNT(*) AS link_count
+  FROM (
+    SELECT 
+       suspect_a_id AS suspect_id FROM associates
+       UNION ALL
+       suspect_b_id AS suspect_id FROM associates
+) AS all_links
+GROUP BY suspect_id
+),
+risk_calc AS (
+    SELECT
+        s.name,
+        s.known_alias,
+        COALESCE(e.total_severity, 0) + COALESCE(n.link_count, 0) AS total_risk
+  FROM suspects s
+  LEFT JOIN evidence_score e
+  ON s.suspect_id = e.suspect_id
+  LEFT JOIN network_score n
+  ON s.suspect_id = n.suspect_id
+)
+SELECT 
+   CASE 
+     WHEN total_risk > 30 THEN 'CRITICAL'
+     WHEN total_risk > 15 THEN 'HIGH'
+   ELSE 'MEDIUM'
+   END AS risk_level
+FROM risk_calc
+ORDER BY total_risk DESC
+```
+
+```SQL
+-- The correc answer
+WITH evidence_scores AS (
+    SELECT 
+      suspect_id, 
+      SUM(severity_score) AS evidence_score 
+    FROM evidence_log 
+    GROUP BY suspect_id
+), 
+network_scores AS (
+    SELECT 
+      suspect_a_id AS suspect_id, 
+      COUNT(*) * 5 AS network_score 
+    FROM associates 
+    GROUP BY suspect_a_id
+), 
+risk_calculation AS (
+    SELECT 
+      s.name, 
+      s.known_alias, 
+      COALESCE(e.evidence_score, 0) + COALESCE(n.network_score, 0) AS total_risk 
+    FROM suspects s 
+    LEFT JOIN evidence_scores e 
+    ON s.suspect_id = e.suspect_id 
+    LEFT JOIN network_scores n 
+    ON s.suspect_id = n.suspect_id
+) 
+SELECT *, 
+    CASE 
+      WHEN total_risk > 30 THEN 'CRITICAL' 
+      WHEN total_risk > 15 THEN 'HIGH' 
+      ELSE 'MEDIUM' 
+    END AS risk_level 
+FROM risk_calculation 
+ORDER BY total_risk DESC;
+```
