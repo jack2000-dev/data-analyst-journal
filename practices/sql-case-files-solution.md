@@ -2415,7 +2415,7 @@ ORDER BY total_risk DESC
 ```
 
 ```SQL
--- The correc answer
+-- The correct answer
 WITH evidence_scores AS (
     SELECT 
       suspect_id, 
@@ -2449,4 +2449,86 @@ SELECT *,
     END AS risk_level 
 FROM risk_calculation 
 ORDER BY total_risk DESC;
+```
+
+**99) The Final Dossier**
+
+Make it airtight. Compile the dossier using CTEs to aggregate counts for 'Suspects', 'Evidence Items', and 'Network Links'. Add a specific entry for the 'Primary Target'. List `category` and `value`.
+
+```SQL
+-- My incorrect answer
+
+WITH suspect_count AS (
+     SELECT 'Suspects' AS category, CAST(COUNT(*) AS CHAR) AS value
+     FROM suspects
+),
+evidence_count AS (
+     SELECT 'Evidence' AS category, CAST(COUNT(*) AS CHAR) AS value
+     FROM evidence_log
+),
+link_count AS (
+     SELECT 'Network Links' AS category, CAST(COUNT(*) AS CHAR) AS value
+     FROM associates
+),
+primary_target AS (
+     SELECT 
+        'Primary Target' AS category,
+         name AS value
+         FROM suspects s
+         JOIN (
+              SELECT 
+                 suspect_id,
+                 COUNT(*) AS evidence_hits
+              FROM evidence_log
+              GROUP BY suspect_id
+              ORDER BY evidence_hits DESC
+              LIMIT 1
+           ) top_sus ON s.suspect_id = top_sus.suspect_id
+)
+
+SELECT * FROM suspect_count
+UNION ALL
+SELECT * FROM evidence_count
+UNION ALL
+SELECT * FROM link_count
+UNION ALL
+SELECT * FROM primary_target
+```
+
+```SQL
+-- The correct answer
+WITH summary_stats AS (
+    -- Collect the bulk counts for the organization
+    SELECT 
+        'Suspects' AS category, 
+        COUNT(*) AS value 
+    FROM suspects
+
+    UNION ALL 
+    
+    SELECT 
+        'Evidence Items', 
+        COUNT(*) 
+    FROM evidence_log
+    
+    UNION ALL 
+    
+    SELECT 
+        'Network Links', 
+        COUNT(*) 
+    FROM associates
+), 
+
+top_target AS (
+    -- Format the specific high-value target string
+    SELECT 
+        name || ' (' || known_alias || ')' AS target 
+    FROM suspects 
+    WHERE suspect_id = 1
+)
+
+-- Assemble the final dossier
+SELECT * FROM summary_stats
+UNION ALL 
+SELECT 'Primary Target', target FROM top_target;
 ```
