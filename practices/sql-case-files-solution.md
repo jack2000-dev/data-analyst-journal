@@ -2532,3 +2532,108 @@ SELECT * FROM summary_stats
 UNION ALL 
 SELECT 'Primary Target', target FROM top_target;
 ```
+
+**100) The Architect's Fall**
+
+This is it. Execute the warrant. Combine recursive hierarchy and evidence aggregation. List `name`, `role`, `level`, `evidence_items`, `severity`, and `status` ('PRIMARY TARGET' or 'ACCOMPLICE'). Sort by level, then by severity descending.
+
+```SQL
+-- My incorrect answer
+WITH RECURSIVE summary_stats AS (
+    SELECT 
+        suspect_id, 
+        name, 
+        role, 
+        1 AS level
+    FROM suspects
+    WHERE mentor_id IS NULL
+
+    UNION ALL
+    
+    SELECT 
+        s.suspect_id, 
+        s.name, 
+        s.role, 
+        ss.level + 1
+    FROM suspects s
+    INNER JOIN summary_stats ss ON s.mentor_id = ss.suspect_id
+),
+evidence_agg AS (
+    SELECT 
+        suspect_id, 
+        COUNT(*) AS evidence_items, 
+        SUM(severity_score) AS total_severity
+    FROM evidence_log
+    GROUP BY suspect_id
+)
+
+SELECT 
+    ss.name, 
+    ss.role, 
+    ss.level, 
+    COALESCE(e.evidence_items, 0) AS evidence_items, 
+    COALESCE(e.total_severity, 0) AS severity,
+    CASE 
+        WHEN ss.level = 1 THEN 'PRIMARY TARGET' 
+        ELSE 'ACCOMPLICE' 
+    END AS status
+FROM summary_stats ss
+LEFT JOIN evidence_agg e ON ss.suspect_id = e.suspect_id
+ORDER BY ss.level ASC, severity DESC;
+```
+
+```SQL
+-- The correct answer
+WITH RECURSIVE command_chain AS (
+    -- Anchor: Start with the top-tier Leader
+    SELECT 
+        suspect_id, 
+        name, 
+        role, 
+        0 AS level 
+    FROM suspects 
+    WHERE role = 'Leader'
+    
+    UNION ALL
+    
+    -- Recursive: Link subordinates to their mentors
+    SELECT 
+        s.suspect_id, 
+        s.name, 
+        s.role, 
+        c.level + 1 
+    FROM suspects s 
+    JOIN command_chain c ON s.mentor_id = c.suspect_id
+), 
+
+evidence_summary AS (
+    -- Aggregate crime stats per suspect
+    SELECT 
+        suspect_id, 
+        COUNT(*) AS evidence_count, 
+        SUM(severity_score) AS total_severity 
+    FROM evidence_log 
+    GROUP BY suspect_id
+)
+
+-- Final dossier assembly
+SELECT 
+    c.name, 
+    c.role, 
+    c.level, 
+    COALESCE(e.evidence_count, 0) AS evidence_items, 
+    COALESCE(e.total_severity, 0) AS severity, 
+    CASE 
+        WHEN c.level = 0 THEN 'PRIMARY TARGET' 
+        ELSE 'ACCOMPLICE' 
+    END AS status 
+FROM command_chain c 
+LEFT JOIN evidence_summary e ON c.suspect_id = e.suspect_id 
+ORDER BY 
+    c.level ASC, 
+    severity DESC;
+```
+
+# Thoughts
+
+- This SQL game is great for practicing as a beginner. Especially in the sector of fraud detection. The question is too short, and the later level requires advanced SQL functions and knowledge. Games like these are a very good start for beginners to keep you entertained and learning at the same time.
