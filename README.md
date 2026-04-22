@@ -60,9 +60,11 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 - [Bullrun Analysis Dashboard v1.0.0](https://dune.com/jack_2000/3rd-bullrun-analysis) - Dune dashboard for crypto bullrun analysis (currently in beta phase) **[SQL (Trino fork)]**
 - [CLV Business Analysis](https://github.com/jack2000-dev/CLV-business-analysis) - Customer Lifetime Value (CLV) analysis for a retail business (Mock Data) **[Python]**
 - [Sales and Customer Dashboard](https://public.tableau.com/views/SalesandCustomerDashboardPratice/SalesDashboard?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link) - **[Tableau]** Mock-up data template building
+- [Olist EDA Practice](https://www.kaggle.com/code/jackwp/olist-eda-practice) - E-commerce Exploratory Data Analysis project **[Python]**
 
 # Practices
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginner
+- [SQL Case Files](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-case-files-solution.md) - A SQL game for interactively practicing your SQL skills
 
 # Timeline
 
