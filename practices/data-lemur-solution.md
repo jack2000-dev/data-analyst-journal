@@ -293,3 +293,26 @@ GROUP BY e.employee_id, employee_name
 ```
 
 *Note: A better solution for this would be a `self-JOIN`, where I was confused by the JOIN clause at first. In database design, a column named `manager_id` on an employee's row almost always refers to who that employee reports to, not who they are.*
+
+## Final Account Balance
+
+```SQL
+-- Error
+SELECT
+  account_id,
+  SUM(amount) AS final_balance
+FROM transactions
+GROUP BY account_id
+```
+
+```SQL
+-- Solved
+
+-- Final balance = Deposit - Withdrawal
+SELECT
+  account_id,
+    SUM(CASE WHEN transaction_type = 'Deposit' THEN amount ELSE 0 END) -
+    SUM(CASE WHEN transaction_type = 'Withdrawal' THEN amount ELSE 0 END) AS final_balance
+FROM transactions
+GROUP BY account_id
+```
