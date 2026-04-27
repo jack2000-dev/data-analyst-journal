@@ -61,12 +61,13 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 - [CLV Business Analysis](https://github.com/jack2000-dev/CLV-business-analysis) - Customer Lifetime Value (CLV) analysis for a retail business (Mock Data) **[Python]**
 - [Sales and Customer Dashboard](https://public.tableau.com/views/SalesandCustomerDashboardPratice/SalesDashboard?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link) - **[Tableau]** Mock-up data template building
 - [Olist EDA Practice](https://www.kaggle.com/code/jackwp/olist-eda-practice) - E-commerce Exploratory Data Analysis project **[Python]**
-- [Chinook Music Store — SQL Revenue Analysis](https://github.com/jack2000-dev/chinook-analysis) - Sample dataset for EDA and queries practices **[SQL]**
+- [Chinook Music Store — SQL Revenue Analysis](https://github.com/jack2000-dev/chinook-analysis) - Sample dataset for EDA and query practices **[SQL]**
+- [Cafe Sales](https://www.kaggle.com/code/jackwp/cafe-sales-data-cleaning-training) - Data cleaning training **[Python]**
 
 # Practices
-- [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginner
+- [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginners
 - [SQL Case Files](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-case-files-solution.md) - A SQL game for interactively practicing your SQL skills
-- [SQLZoo](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/SQLZoo.md) - SQL tutorials and references with SQLZoo
+- [SQL Zoo](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/SQLZoo.md) - SQL tutorials and references with SQL Zoo
 
 # Timeline
 
