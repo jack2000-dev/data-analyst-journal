@@ -291,3 +291,154 @@ subject,
 winner
 ```
 
+# SELECT in SELECT
+
+## 1. Bigger than Russia
+
+```SQL
+-- Solved
+SELECT name
+FROM world
+WHERE population >
+     (SELECT population FROM world
+      WHERE name='Russia')
+```
+
+## 2.  Richer than UK
+
+```SQL
+-- Error
+SELECT name
+FROM world
+WHERE continent = 'Europe' 
+AND gdp / population >
+      (SELECT gdp / population
+       FROM world
+       WHERE continent = 'United Kingdom')
+```
+
+```SQL
+-- Solved
+SELECT name
+FROM world
+WHERE continent = 'Europe' 
+AND gdp / population >
+      (SELECT gdp / population
+       FROM world
+       WHERE name = 'United Kingdom')
+```
+
+## 3. Neighbours of Argentina and Australia
+
+```SQL
+-- Error
+SELECT name, continent
+FROM world
+WHERE name IN
+
+(SELECT continent
+FROM world
+WHERE name IN ('Argentina', 'Australia')
+)
+ORDER BY name
+```
+
+```SQL
+-- Solved
+SELECT name, continent
+FROM world
+WHERE continent IN
+    (SELECT continent
+     FROM world
+     WHERE name IN ('Argentina', 'Australia')
+    )
+ORDER BY name
+```
+
+## 4. Between Canada and Poland
+
+```SQL
+-- Solved
+SELECT name, population
+FROM world
+WHERE population > 
+(SELECT population FROM world WHERE name = 'United Kingdom')
+AND population < (SELECT population FROM world WHERE name = 'Germany');
+```
+
+## 5. Percentages of Germany
+
+```SQL
+-- Solved
+SELECT
+  name,
+  CONCAT(ROUND(
+    population / 
+    (SELECT population 
+     FROM world 
+     WHERE name = 'Germany'
+    ) * 100, 0), '%') AS percentage
+FROM world
+WHERE continent = 'Europe'
+```
+
+## 6. Bigger than every country in Europe
+
+```SQL
+SELECT
+  name
+FROM world
+WHERE gdp > ALL(SELECT gdp
+                  FROM world
+                  WHERE continent = 'Europe')
+```
+
+## 7. Largest in each continent
+
+```SQL
+-- Solved
+SELECT continent, name, area 
+FROM world w1
+WHERE area >= ALL
+    (SELECT area 
+     FROM world w2
+     WHERE w2.continent=w1.continent
+    )
+```
+
+## 8. First country of each continent (alphabetically)
+
+```SQL
+-- Solved
+SELECT continent, name
+FROM world w1
+WHERE name <= ALL
+    (SELECT name 
+     FROM world w2
+     WHERE w1.continent = w2.continent)
+```
+
+## 9. Difficult Questions That Utilize Techniques Not Covered In Prior Sections
+
+```SQL
+-- Solved
+SELECT name, continent, population
+FROM world
+WHERE population <= 25000000 
+AND name = ALL (SELECT name FROM world WHERE population <= 25000000)
+```
+
+## 10. Three times bigger
+
+```SQL
+-- Solved
+SELECT
+  name,
+  continent
+FROM world w1
+WHERE population > ALL
+    (SELECT population * 3 
+     FROM world w2
+     WHERE w1.continent = w2.continent
+     AND w1.name <> w2.name)
+```
