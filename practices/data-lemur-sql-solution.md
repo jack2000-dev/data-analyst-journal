@@ -341,3 +341,13 @@ WHERE timestamp BETWEEN '2022-01-01' AND '2022-12-31'
 GROUP BY app_id
 ORDER BY ctr
 ```
+
+## Second Day Confirmation
+
+```SQL
+SELECT user_id
+FROM emails e 
+JOIN texts t ON e.email_id = t.email_id
+WHERE t.signup_action = 'Confirmed' 
+AND t.action_date = e.signup_date + INTERVAL '1 day'
+```
