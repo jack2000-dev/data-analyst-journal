@@ -64,6 +64,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 - [Chinook Music Store — SQL Revenue Analysis](https://github.com/jack2000-dev/chinook-analysis) - Sample dataset for EDA and query practices **[SQL]**
 - [Cafe Sales](https://www.kaggle.com/code/jackwp/cafe-sales-data-cleaning-training) - Data cleaning training **[Python]**
 - [On-chain Tokenized Gold](https://github.com/jack2000-dev/tokenized-gold-on-chain-analysis) - Dune dashboard for XAUT, PAXG, and CGT **[SQL (Trino fork)]**
+- [Amazon Sales](https://github.com/jack2000-dev/amazon-data-analysis) - E-commerce data analysis [Python]
 
 # Practices
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginners
