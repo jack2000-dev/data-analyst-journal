@@ -70,6 +70,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginners
 - [SQL Case Files](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-case-files-solution.md) - A SQL game for interactively practicing your SQL skills
 - [SQL Zoo](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-zoo-solution.md) - SQL tutorials and references with SQL Zoo
+- [DataLemur](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/data-lemur-sql-solution.md) - Practice SQL Interview and Data Science Interview questions
 
 # Timeline
 
