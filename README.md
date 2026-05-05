@@ -6,32 +6,10 @@ This repository is my data analyst journal to record and keep track of my learni
 # Useful Links
 - ⭐ [awesom-data-analysis](https://github.com/PavelGrigoryevDS/awesome-data-analysis)
 - [Kaggle (My profile)](https://www.kaggle.com/jackwp)
-- [Data community](https://towardsdatascience.com/)
-- [Data analyst roadmap](https://github.com/mtahiraslan/data-analyst-roadmap)
-- [Data Project Documentation Template](https://github.com/jack2000-dev/data-project-documentation-template)
-# Techstacks
-## Spreadsheets
-- Google Sheets
-- Excel
-## SQL
-- PostgreSQL
-- BigQuery
-- MySQL
-## Python (library)
-- [matplotlib](https://matplotlib.org/)
-- NumPy
-- [pandas](https://pandas.pydata.org/)
-- [seaborn](https://seaborn.pydata.org/)
-## R (library)
-- [awesom-ggplot2](https://github.com/erikgahner/awesome-ggplot2)
+- [Toward Data Science](https://towardsdatascience.com/) - Data community
+- [DAF](https://github.com/jack2000-dev/DAF) - Data Analysis Framework
+- [DAB](https://github.com/jack2000-dev/DAB) - Data Analysis Bible
 
-## Data Visualization
-- Tableau
-- PowerBI
-## Additional
-### Blockchain DA
-- [Dune Analytics](https://dune.com/home)
-- [Transpose](https://app.transpose.io/)
 # Data Analysis Foundation
 
 Data is a collection of facts. Data is a clay to make a brick. You can use data to look into the past, present, and future. [Real example of data analytics.](https://online.hbs.edu/blog/post/business-analytics-examples)
@@ -64,7 +42,7 @@ Data is a collection of facts. Data is a clay to make a brick. You can use data 
 - [Chinook Music Store — SQL Revenue Analysis](https://github.com/jack2000-dev/chinook-analysis) - Sample dataset for EDA and query practices **[SQL]**
 - [Cafe Sales](https://www.kaggle.com/code/jackwp/cafe-sales-data-cleaning-training) - Data cleaning training **[Python]**
 - [On-chain Tokenized Gold](https://github.com/jack2000-dev/tokenized-gold-on-chain-analysis) - Dune dashboard for XAUT, PAXG, and CGT **[SQL (Trino fork)]**
-- [Amazon Sales](https://github.com/jack2000-dev/amazon-data-analysis) - E-commerce data analysis [Python]
+- [Amazon Sales](https://github.com/jack2000-dev/amazon-data-analysis) - E-commerce data analysis **[Python]**
 
 # Practices
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginners
