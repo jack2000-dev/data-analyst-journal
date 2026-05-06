@@ -10,29 +10,6 @@ This repository is my data analyst journal to record and keep track of my learni
 - [DAF](https://github.com/jack2000-dev/DAF) - Data Analysis Framework
 - [DAB](https://github.com/jack2000-dev/DAB) - Data Analysis Bible
 
-# Data Analysis Foundation
-
-Data is a collection of facts. Data is a clay to make a brick. You can use data to look into the past, present, and future. [Real example of data analytics.](https://online.hbs.edu/blog/post/business-analytics-examples)
-
-> **Remember to understand the problem before jumping right into analysis. So that we can solve the right problem with the right answer and right data.**
-
-## Process of Data Analysis
-
-> The biggest mistake analysts make when using this framework is looking for quick and easy answers. This framework is not linear. We can go back and forth to make sure that all steps are correct and practical. And review your work in each phase to improve. Ask the right question and understand the objective. Don't worry about the right answer. Enjoy exploring the data to find the unknown insight
-
-- **Ask:** business challenge, objective, or question
-
-- **Prepare:** data generation, collection, storage, and data management
-
-- **Process:** data cleaning and data integrity
-
-- **Analyze:** data exploration, visualization, and analysis
-
-- **Share:** communicating and interpreting results
-
-- **Act:** putting insights to work to solve the problem
-
-[4 Examples of Business Analytics in Action](https://online.hbs.edu/blog/post/business-analytics-examples)
 # Projects
 - [Bellabeat Case Study](https://www.kaggle.com/code/jackwp/bellabeat-case-study-in-r) - Google Data Analytics Capstone Project **[R]**
 - [Bullrun Analysis Dashboard v1.0.0](https://dune.com/jack_2000/3rd-bullrun-analysis) - Dune dashboard crypto bullrun analysis (beta) **[SQL (Trino fork)]**
