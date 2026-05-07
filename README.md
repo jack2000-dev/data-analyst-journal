@@ -20,6 +20,7 @@ This repository is my data analyst journal to record and keep track of my learni
 - [Cafe Sales](https://www.kaggle.com/code/jackwp/cafe-sales-data-cleaning-training) - Data cleaning training **[Python]**
 - [On-chain Tokenized Gold](https://github.com/jack2000-dev/tokenized-gold-on-chain-analysis) - Dune dashboard for XAUT, PAXG, and CGT **[SQL (Trino fork)]**
 - [Amazon Sales](https://github.com/jack2000-dev/amazon-data-analysis) - E-commerce data analysis **[Python]**
+- [Crypto Leaderboard](https://github.com/jack2000-dev/crypto-market-dashboard-pipeline) - Simple Crypto dashboard with Coingecko API **[ETL, Polars]**
 
 # Practices
 - [SQL Murder Mystery](https://github.com/jack2000-dev/data-analyst-journal/blob/main/practices/sql-mystery-practice-solution.md) - A mystery game using SQL for beginners
