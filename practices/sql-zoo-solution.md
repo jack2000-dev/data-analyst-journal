@@ -442,3 +442,418 @@ WHERE population > ALL
      WHERE w1.continent = w2.continent
      AND w1.name <> w2.name)
 ```
+
+# SUM and COUNT
+
+## 1. Total World Population
+
+```SQL
+-- Solved
+SELECT SUM(population)
+FROM world
+```
+
+## 2. List of Continents
+
+```SQL
+-- Solved
+SELECT DISTINCT continent
+FROM world
+```
+
+## 3. GDP of Africa
+
+```SQL
+-- Solved
+SELECT SUM(gdp)
+FROM world
+WHERE continent = 'Africa'
+GROUP BY continent
+```
+
+## 4. Count the big countries
+
+```SQL
+-- Solved
+SELECT COUNT(name) AS large_country_count
+FROM world
+WHERE area >= 1000000
+```
+
+## 5. Baltic states population
+
+```SQL
+-- Solved
+SELECT SUM(population)
+FROM world
+WHERE name IN ('Estonia', 'Latvia', 'Lithuania')
+```
+
+## 6. Counting the countries of each continent
+
+```SQL
+-- Solved
+SELECT continent, COUNT(name) AS number_of_contries
+FROM world
+GROUP BY continent
+```
+
+## 7. Counting big countries in each continent
+
+```SQL
+-- Solved
+SELECT continent, COUNT(name) AS number_of_countries
+FROM world
+WHERE population >= 10000000
+GROUP BY continent
+```
+
+## 8. Counting big continents
+
+```SQL
+-- Solved
+SELECT continent
+FROM world
+GROUP BY continent
+HAVING SUM(population) > 100000000
+```
+
+# JOIN
+
+## 1. Bender Goals
+
+```SQL
+-- Solved
+SELECT matchid, player 
+FROM goal 
+WHERE teamid LIKE 'GER%'
+```
+
+## 2. Team names
+
+```SQL
+-- Solved
+SELECT g.id,g.stadium,g.team1,g.team2
+FROM game g
+WHERE g.id = '1012'
+```
+
+## 3. JOIN
+
+```SQL
+-- Solved
+SELECT player,teamid, stadium, mdate
+FROM game 
+JOIN goal ON (id=matchid)
+WHERE teamid = 'GER'
+```
+
+## 4. Mario goals
+
+```SQL
+-- Solved
+SELECT team1, team2, player
+FROM game 
+JOIN goal ON (id=matchid)
+WHERE player LIKE 'Mario%'
+```
+
+## 5 . Early goals
+
+```SQL
+-- Solved
+SELECT g.player, g.teamid, t.coach, g.gtime
+  FROM goal g
+JOIN eteam t
+ON g.teamid = t.id
+ WHERE g.gtime<=10
+```
+
+## 6. Fernando Santos
+
+```SQL
+-- Solved
+SELECT g.mdate, t.teamname
+FROM game g
+JOIN eteam t
+ON g.team1 = t.id
+WHERE t.coach = 'Fernando Santos'
+```
+
+## 7. Games in Warsaw
+
+```SQL
+-- Solved
+SELECT player
+FROM game g
+JOIN goal gl
+ON g.id = gl.matchid
+WHERE stadium = 'National Stadium, Warsaw'
+```
+
+## 8 . Who scored against Germany
+
+```SQL
+-- Error
+SELECT DISTINCT gl.player
+FROM game g
+JOIN goal gl
+ON g.id = gl.matchid
+WHERE g.team1 != 'GER' AND g.team2 != 'GER'
+```
+
+```SQL
+-- Solved
+SELECT DISTINCT player
+FROM game 
+JOIN goal ON matchid = id
+WHERE (team1 = 'GER' OR team2 = 'GER') 
+  AND teamid <> 'GER';
+```
+
+## 9. Total goals scored
+
+```SQL
+-- Solved
+SELECT teamname, COUNT(*)
+FROM eteam
+JOIN goal ON id = teamid
+GROUP BY teamname
+```
+
+## 10. Goals by stadium
+
+```SQL
+-- Solved
+SELECT g.stadium, COUNT(gl.gtime)
+FROM game g
+JOIN goal gl
+ON g.id = gl.matchid
+GROUP BY g.stadium
+```
+
+## 11. Poland's games
+
+```SQL
+-- Solved
+SELECT gl.matchid, g.mdate, COUNT(gl.gtime)
+FROM game g
+JOIN goal gl
+ON gl.matchid = g.id 
+WHERE (g.team1 = 'POL' OR g.team2 = 'POL')
+GROUP BY gl.matchid, g.mdate
+```
+
+## 12. Germany scores
+
+```SQL
+-- Solved
+SELECT matchid, mdate, COUNT(gtime)
+FROM game
+JOIN goal
+ON matchid = id
+WHERE teamid = 'GER' 
+GROUP BY matchid, mdate
+```
+
+## 13. All scores
+
+```SQL
+-- Error
+SELECT mdate,
+       team1,
+       SUM(CASE WHEN teamid = team1 THEN 1 ELSE 0 END) AS score1,
+       team2,
+       CASE WHEN teamid = team2 THEN 1 ELSE 0 END AS score2
+FROM game 
+JOIN goal ON matchid = id
+GROUP BY mdate, matchid, team1, team2, teamid
+ORDER BY mdate, matchid, team1, team2
+```
+
+```SQL
+-- Solved
+SELECT mdate,
+       team1,
+       SUM(CASE WHEN teamid = team1 THEN 1 ELSE 0 END) AS score1,
+       team2,
+       SUM(CASE WHEN teamid = team2 THEN 1 ELSE 0 END) AS score2
+FROM game 
+LEFT JOIN goal ON matchid = id
+WHERE team1 = 'ENG' OR team2 = 'ENG'
+GROUP BY mdate, matchid, team1, team2
+ORDER BY mdate, matchid, team1, team2;
+```
+
+# More JOIN
+
+## 1. 1962 movies
+
+```SQL
+-- Error (possibly bug in the db)
+SELECT id, title
+ FROM movie
+ WHERE yr=1962 AND budget > 2000000
+```
+
+## 2. When was Citizen Kane released?
+
+```SQL
+-- Solved
+SELECT yr
+FROM movie
+WHERE title = 'Citizen Kane'
+```
+
+## 3. Star Trek movies
+
+```SQL
+-- Solved
+SELECT id, title, yr
+FROM movie
+WHERE title LIKE 'Star Trek%'
+ORDER BY yr
+```
+
+## 4. id for actor Glenn Close
+
+```SQL
+-- Solved
+SELECT id
+FROM actor
+WHERE name = 'Glenn Close'
+```
+
+## 5. id for Casablanca
+
+```SQL
+-- Solved
+SELECT id
+FROM movie
+WHERE title = 'Casablanca' AND yr = 1942
+```
+
+## 6.  Cast list for Casablanca
+
+```SQL
+-- Solved
+SELECT name
+FROM actor a 
+JOIN casting c
+ON id = actorid
+WHERE movieid = 132689
+```
+
+## 7. Alien cast list
+
+```SQL
+-- Solved
+SELECT name
+FROM actor a
+JOIN casting c
+ON id = actorid
+WHERE movieid = 103569
+```
+
+## 8. Harrison Ford movies
+
+```SQL
+-- Solved
+SELECT title
+ FROM movie
+ JOIN casting ON movie.id = casting.movieid
+ JOIN actor   ON casting.actorid = actor.id
+ WHERE actor.name = 'Harrison Ford';
+```
+
+## 9 . Harrison Ford as a supporting actor
+
+```SQL
+-- Solved
+SELECT title
+ FROM movie
+ JOIN casting ON movie.id = casting.movieid
+ JOIN actor   ON casting.actorid = actor.id
+ WHERE actor.name = 'Harrison Ford' AND casting.ord != 1
+```
+
+## 10. Lead actors in 1962 movies
+
+```SQL
+-- Error
+SELECT title, name
+ FROM movie
+ JOIN casting ON movie.id = casting.movieid
+ JOIN actor   ON casting.actorid = actor.id
+ WHERE yr = 1962 
+   AND ord = 1
+```
+
+## 11. Busy year for Rock Hudson
+
+```SQL
+-- Solved
+SELECT yr,COUNT(title) FROM
+  movie JOIN casting ON movie.id=movieid
+        JOIN actor   ON actorid=actor.id
+WHERE name='Rock Hudson'
+GROUP BY yr
+HAVING COUNT(title) > 2
+```
+
+## 12. Lead actor in Julie Andrews movies
+
+```SQL
+-- Solved
+SELECT title, name
+ FROM movie
+ JOIN casting ON movie.id = casting.movieid
+ JOIN actor   ON casting.actorid = actor.id
+ WHERE ord = 1 
+   AND movieid IN (
+     SELECT movieid 
+     FROM casting
+     JOIN actor ON casting.actorid = actor.id
+     WHERE name = 'Julie Andrews'
+   )
+```
+
+## 13. Actors with 15 leading roles
+
+```SQL
+-- Solved
+SELECT name
+FROM actor a
+JOIN casting c ON a.id = c.actorid
+WHERE c.ord = 1
+GROUP BY name
+HAVING COUNT(*) >= 15
+ORDER BY name ASC
+```
+
+## 14. released in the year 1978
+
+```SQL
+-- Solved
+SELECT title, COUNT(actorid)
+ FROM movie
+ JOIN casting ON movie.id = casting.movieid
+ WHERE yr = 1978
+ GROUP BY title
+ ORDER BY COUNT(actorid) DESC, title
+```
+
+## 15.  with 'Art Garfunkel'
+
+```SQL
+-- Solved
+SELECT DISTINCT name
+ FROM actor
+ JOIN casting ON actor.id = casting.actorid
+ WHERE movieid IN (
+   SELECT movieid FROM casting
+   JOIN actor ON actor.id = casting.actorid
+   WHERE name = 'Art Garfunkel')
+  AND name != 'Art Garfunkel'
+ ORDER BY name
+```
