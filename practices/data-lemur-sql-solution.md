@@ -351,3 +351,61 @@ JOIN texts t ON e.email_id = t.email_id
 WHERE t.signup_action = 'Confirmed' 
 AND t.action_date = e.signup_date + INTERVAL '1 day'
 ```
+
+## IBM db2 Product Analytics
+
+```SQL
+-- Solved
+WITH query_counts AS (
+  SELECT 
+    e.employee_id,
+    COUNT(DISTINCT q.query_id) AS unique_queries
+  FROM employees e
+  LEFT JOIN queries q 
+    ON e.employee_id = q.employee_id
+    AND q.query_starttime >= '2023-07-01' 
+    AND q.query_starttime < '2023-10-01'
+  GROUP BY e.employee_id
+)
+
+SELECT 
+  unique_queries,
+  COUNT(employee_id) AS employee_count
+FROM query_counts
+GROUP BY unique_queries
+ORDER BY unique_queries;
+```
+
+## Cards Issued Difference
+
+```SQL
+-- Error
+SELECT card_name,
+  SUM(CASE WHEN card_name = 'Chase Freedom Flex' THEN issued_amount ELSE 0 END) - 
+  SUM(CASE WHEN card_name = 'Chase Sapphire Reserve' THEN issued_amount ELSE 0 END) AS difference
+FROM monthly_cards_issued
+GROUP BY card_name
+ORDER BY difference DESC
+```
+
+```SQL
+-- Solved
+SELECT
+  card_name,
+  MAX(issued_amount) - MIN(issued_amount) AS difference
+FROM monthly_cards_issued
+GROUP BY card_name
+ORDER BY difference DESC
+```
+
+## Compressed Mean
+
+```SQL
+-- Solved
+SELECT ROUND(
+    SUM(item_count * order_occurrences)::DECIMAL / 
+    SUM(order_occurrences), 
+    1) AS mean
+FROM items_per_order;
+```
+
