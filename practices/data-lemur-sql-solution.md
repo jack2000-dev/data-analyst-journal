@@ -408,4 +408,74 @@ SELECT ROUND(
     1) AS mean
 FROM items_per_order;
 ```
+## Pharmacy Analytics (Part 1)
 
+```sql
+-- Solved
+SELECT
+    drug,
+    (total_sales - cogs) as total_profit
+FROM pharmacy_sales
+ORDER BY 2 DESC
+LIMIT 3
+```
+
+## Pharmacy Analytics (Part 2)
+
+```sql
+-- Error
+SELECT
+    manufacturer,
+    COUNT(drug) as drug_count,
+    ABS(SUM(cogs - total_sales)) as total_loss
+FROM pharmacy_sales
+GROUP BY 1
+ORDER BY total_loss DESC
+```
+```sql
+-- Solved
+SELECT
+    manufacturer,
+    COUNT(drug) as drug_count,
+    ABS(SUM(total_sales - cogs)) as total_loss
+FROM pharmacy_sales
+WHERE cogs > total_sales
+GROUP BY 1
+ORDER BY 3 DESC
+```
+
+## Phramacy Analytics (Part 3)
+
+```sql
+-- Solved
+SELECT
+  manufacturer,
+  CONCAT('$', ROUND(SUM(total_sales) / 1000000 , 0), ' million') as sale
+FROM pharmacy_sales
+GROUP BY 1
+ORDER BY SUM(total_sales) DESC
+```
+## Patient Support Analysis (Part 1)
+
+```sql
+-- Error
+SELECT
+    count(policy_holder_id) as policy_holder_count
+FROM callers
+HAVING count(case_id) >= 3
+```
+
+```sql
+-- Solved
+WITH cte as (
+    SELECT
+      policy_holder_id
+    FROM callers
+    GROUP BY 1
+    HAVING count(case_id) >= 3
+)
+
+SELECT
+    count(*) as policy_holder_count
+FROM cte
+```
