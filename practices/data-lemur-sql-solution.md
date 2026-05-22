@@ -479,3 +479,41 @@ SELECT
     count(*) as policy_holder_count
 FROM cte
 ```
+
+## User's Third Transaction
+
+```sql
+-- Solved
+with third_txn as (
+  select
+    user_id,
+    spend,
+    transaction_date,
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY transaction_date) as tx_num
+  from transactions
+)
+
+select
+  user_id,
+  spend,
+  transaction_date
+from third_txn
+where tx_num = 3
+```
+
+## Second Highest Salary
+
+```sql
+-- Solved
+with second_rank as (
+    select
+    salary,
+    dense_rank() over(order by salary desc) as salary_rank
+FROM employee
+)
+
+select
+  salary as second_higest_salary
+from second_rank
+where salary_rank = 2
+```
