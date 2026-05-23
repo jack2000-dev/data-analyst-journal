@@ -517,3 +517,114 @@ select
 from second_rank
 where salary_rank = 2
 ```
+
+## Sending vs. Opening Snaps
+
+```sql
+-- Solved
+with cte as (
+  select
+      user_id,
+      case when activity_type = 'send' then time_spent else 0 end as send,
+      case when activity_type = 'open' then time_spent else 0 end as open
+  from activities
+)
+
+select
+    a.age_bucket,
+    round(100 * sum(send) / (sum(send) + sum(open)), 2) as send_perc,
+    round(100 * sum(open) / (sum(send) + sum(open)), 2) as open_perc
+from cte
+join age_breakdown a on cte.user_id = a.user_id
+group by a.age_bucket
+```
+
+## Tweets' Rolling Averages
+
+```sql
+-- Error
+with ma as (
+SELECT 
+    user_id,
+    tweet_date,
+    avg(tweet_count) over (
+      order by tweet_date
+      rows between 2 preceding and current row
+    ) as rolling_avg_3d
+FROM tweets
+)
+
+select
+    user_id,
+    tweet_date,
+    round(rolling_avg_3d, 2) as rolling_avg_3d
+from ma
+order by user_id
+```
+
+```sql
+-- Solved
+with ma as (
+SELECT 
+    user_id,
+    tweet_date,
+    avg(tweet_count) over (
+      partition by user_id
+      order by tweet_date
+      rows between 2 preceding and current row
+    ) as rolling_avg_3d
+FROM tweets
+)
+
+select
+    user_id,
+    tweet_date,
+    round(rolling_avg_3d, 2) as rolling_avg_3d
+from ma
+order by 1, 2
+```
+
+## Highest-Grossing Items
+
+```sql
+-- Error
+SELECT 
+  category,
+  product,
+  sum(spend) as total_spend
+FROM product_spend
+where extract (year from transaction_date) = 2022
+group by 1, 2
+order by total_spend desc
+```
+
+```sql
+-- Solved
+with total as (
+  select
+    category,
+    product,
+    sum(spend) as total_spend
+  from product_spend
+  where extract (year from transaction_date) = 2022
+  group by 1, 2
+),
+
+rank as (
+SELECT 
+  category,
+  product,
+  total_spend,
+  rank() over (partition by category order by total_spend desc) as rank
+FROM total
+)
+
+select
+  category,
+  product,
+  total_spend
+from rank
+where rank <= 2
+order by 1, 3 desc
+```
+
