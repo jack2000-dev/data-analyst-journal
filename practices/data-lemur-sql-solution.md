@@ -627,4 +627,51 @@ from rank
 where rank <= 2
 order by 1, 3 desc
 ```
+## Top Three Salaries
 
+```sql
+-- Error
+  with rank as (
+    SELECT
+        dense_rank() over (partition by d.department_id order by e.name) as rank_salary,
+        d.department_name,
+        e.name,
+        e.salary
+    FROM employee e
+    join department d on e.department_id = d.department_id
+  )
+  
+  select
+    department_name,
+    name,
+    salary
+  from rank
+  where rank_salary <= 3
+```
+
+```sql
+-- Solved
+with salary_rank as (
+  SELECT
+      dense_rank() over (partition by d.department_id order by e.salary desc) as rank_salary,
+      d.department_name,
+      e.name as employee_name,
+      e.salary
+  FROM employee e
+  join department d on e.department_id = d.department_id
+  order by 3
+)
+
+select
+  department_name,
+  employee_name,
+  salary
+from salary_rank
+where rank_salary <= 3
+order by 
+  department_name asc,
+  salary desc, 
+  employee_name asc
+```
+
+Note: I alias name because it's reserve keyword in SQL. Keep the code clean
