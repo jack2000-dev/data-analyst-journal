@@ -675,3 +675,61 @@ order by
 ```
 
 Note: I alias name because it's reserve keyword in SQL. Keep the code clean
+
+## Signup Activation Rate
+
+```sql
+-- Error
+with total_user as (
+  select 
+    count(distinct user_id) as total_unique_user
+  from emails
+),
+
+activated_user as (
+
+SELECT 
+   count(distinct user_id) as total_activated_user
+FROM emails e 
+join texts t on e.email_id = t.email_id
+where t.signup_action = 'Confirmed'
+)
+
+select
+  round(100 * total_activated_user / total_unique_user, 2) as confirm_rate
+from activated_user
+cross join total_user
+```
+```sql
+-- Solved
+with total_user as (
+  select 
+    count(distinct user_id) as total_unique_user
+  from emails
+),
+
+activated_user as (
+
+SELECT 
+   count(distinct user_id) as total_activated_user
+FROM emails e 
+join texts t on e.email_id = t.email_id
+where t.signup_action = 'Confirmed'
+)
+
+select
+  round(cast(total_activated_user as numeric) / cast(total_unique_user as numeric), 2) as activation_rate
+from activated_user
+cross join total_user
+```
+
+```sql
+-- Optimized version
+SELECT
+  ROUND(
+    COUNT(DISTINCT CASE WHEN t.signup_action = 'Confirmed' THEN e.user_id END)::NUMERIC /
+    COUNT(DISTINCT e.user_id)::NUMERIC,
+  2) AS activation_rate
+FROM emails e
+LEFT JOIN texts t ON e.email_id = t.email_id
+```
