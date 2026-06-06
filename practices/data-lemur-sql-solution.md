@@ -733,3 +733,32 @@ SELECT
 FROM emails e
 LEFT JOIN texts t ON e.email_id = t.email_id
 ```
+## Spotify Streaming History
+
+```sql
+-- Solved
+with cte as (
+  select
+      user_id,
+      song_id,
+      song_plays
+  from songs_history
+
+union all
+
+  select 
+      user_id,
+      song_id,
+      1 as song_plays
+  from songs_weekly
+  where listen_time < '08/05/2022 00:00:00'
+)
+
+select
+    user_id,
+    song_id,
+    sum(song_plays) as song_plays
+from cte
+group by user_id, song_id
+order by 3 desc
+```
