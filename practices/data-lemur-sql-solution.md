@@ -762,3 +762,41 @@ from cte
 group by user_id, song_id
 order by 3 desc
 ```
+
+## Supercloud Customer
+
+```sql
+-- Error
+select
+    c.customer_id
+from customer_contracts c
+join products p
+  on c.product_id = p.product_id
+where p.product_name like 'Azure%'
+```
+
+```sql
+-- Solved
+select distinct
+    c.customer_id
+from customer_contracts c
+join products p
+  on c.product_id = p.product_id
+where p.product_category in ('Analytics', 'Containers', 'Compute')
+group by 1
+having count(distinct p.product_category) = 3
+```
+
+```sql
+-- Optimized
+select
+    c.customer_id
+from customer_contracts c
+join products p
+  on c.product_id = p.product_id
+group by c.customer_id
+having count(distinct p.product_category) = (
+    select count(distinct product_category) 
+    from products
+);
+```
