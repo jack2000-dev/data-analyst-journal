@@ -800,3 +800,62 @@ having count(distinct p.product_category) = (
     from products
 );
 ```
+
+## Odd and Even Measurements
+
+```sql
+-- Error
+with date_time as (
+    select
+         measurement_time::date as m_day,
+         measurement_time::time as m_time,
+         measurement_id,
+         measurement_value
+    from measurements
+    order by 1, 2 desc
+),
+
+ranking as (
+    select
+        row_number() over (partition by m_day order by m_time) as ranking,
+        m_day as measurement_day,
+        measurement_id,
+        measurement_value
+    from date_time
+)
+
+select
+    cast('mm-dd-yyyy', m_day) as measurement_day,
+    sum(case when ranking %2 != 0 then measurement_value else 0 end) as odd_sum,
+    sum(case when ranking %2 = 0 then measurement_value else 0 end) as even_sum
+from ranking
+group by 1
+```
+
+```sql
+-- Solved
+with date_time as (
+    select
+         measurement_time::date as m_day,
+         measurement_time::time as m_time,
+         measurement_id,
+         measurement_value
+    from measurements
+),
+
+ranking as (
+    select
+        row_number() over (partition by m_day order by m_time) as ranking,
+        m_day,
+        measurement_id,
+        measurement_value
+    from date_time
+)
+
+select
+    m_day as measurement_day,
+    sum(case when ranking %2 != 0 then measurement_value else 0 end) as odd_sum,
+    sum(case when ranking %2 = 0 then measurement_value else 0 end) as even_sum
+from ranking
+group by 1
+```
