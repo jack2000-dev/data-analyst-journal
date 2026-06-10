@@ -859,3 +859,34 @@ select
 from ranking
 group by 1
 ```
+
+## Swapped Food Delivery
+
+```sql
+-- Error
+select 
+    case
+      when order_id % 2 != 0 then lead(order_id) over (order by order_id)
+      else lag(order_id) over (order by order_id)
+      end as corrected_order_id,
+    item
+from orders
+order by 1
+```
+
+```sql
+-- Solved
+select 
+    case
+      when order_id % 2 != 0 then lead(order_id, 1, order_id) 
+        over (order by order_id)
+      else lag(order_id, 1, order_id) 
+        over (order by order_id)
+      end as corrected_order_id,
+    item
+from orders
+order by 1
+```
+
+Note: `LEAD()` looks at the next row. Because the last row is the end of the dataset, there is no "next" row for it to grab, so SQL defaults to `NULL`. The `1` tells it to look exactly one row ahead then next argument is the value to return, in this case, `order_id`
+
