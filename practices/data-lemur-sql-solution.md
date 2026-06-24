@@ -890,3 +890,36 @@ order by 1
 
 Note: `LEAD()` looks at the next row. Because the last row is the end of the dataset, there is no "next" row for it to grab, so SQL defaults to `NULL`. The `1` tells it to look exactly one row ahead then next argument is the value to return, in this case, `order_id`
 
+## FAANG Stock Min-Max (Part 1)
+
+```sql
+-- Solved
+with highest_cte as (
+    select
+      ticker,
+      to_char(date, 'Mon-YYYY') as high_date,
+      open,
+      row_number() over (partition by ticker order by open desc) as rank_high
+    from stock_prices
+),
+
+lowest_cte as (
+    select
+      ticker,
+      to_char(date, 'Mon-YYYY') as low_date,
+      open,
+      row_number() over (partition by ticker order by open asc) as rank_low
+    from stock_prices
+)
+
+select
+    h.ticker,
+    h.high_date as highest_mth,
+    h.open as highest_open,
+    l.low_date as lowest_mth,
+    l.open as lowest_open
+from highest_cte h
+join lowest_cte l on h.ticker = l.ticker
+where h.rank_high = 1 and l.rank_low = 1
+order by h.ticker
+```
