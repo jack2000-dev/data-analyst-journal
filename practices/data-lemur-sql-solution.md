@@ -923,3 +923,46 @@ join lowest_cte l on h.ticker = l.ticker
 where h.rank_high = 1 and l.rank_low = 1
 order by h.ticker
 ```
+
+## Best-Selling Product
+
+```sql
+-- First try
+with ranking as (
+SELECT
+    product_id,
+    dense_rank() over (partition by product_id order by sales_quantity desc) as product_rank
+FROM product_sales
+)
+
+select
+  category_name,
+  product_name
+from products p
+join ranking r on p.product_id = r.product_id
+```
+
+```sql
+-- Solved
+with ranking as (
+select
+    p.category_name,
+    p.product_name,
+    sum(s.sales_quantity) as total_sales,
+    row_number() over (
+    partition by p.category_name 
+    order by sum(s.sales_quantity) desc,
+    s.rating desc
+    ) as product_rank
+from products p
+join product_sales s on p.product_id = s.product_id
+group by 1, 2, s.rating
+)
+
+select
+  category_name,
+  product_name
+from ranking
+where product_rank = 1
+order by 1 asc
+```
