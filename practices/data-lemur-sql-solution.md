@@ -966,3 +966,45 @@ from ranking
 where product_rank = 1
 order by 1 asc
 ```
+
+## User Shopping Sprees
+
+```sql
+-- Error
+with cons as (
+    select
+        user_id,
+        row_number() over (partition by user_id order by transaction_date asc) as unique_day
+    from transactions
+)
+
+select
+    user_id
+from cons
+group by user_id
+having count(unique_day) >= 3
+```
+
+```sql
+-- Solved
+with unique_dates as (
+    select distinct
+        user_id,
+        cast(transaction_date as date) as t_date
+    from transactions
+),
+
+streak_groups as (
+    select
+        user_id,
+        t_date,
+        t_date - (row_number() over (partition by user_id order by t_date) * interval '1 days') as base_date
+    from unique_dates
+)
+
+select user_id
+from streak_groups
+group by user_id, base_date
+having count(*) >= 3
+order by user_id asc
+```
