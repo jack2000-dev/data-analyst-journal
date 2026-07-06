@@ -1008,3 +1008,35 @@ group by user_id, base_date
 having count(*) >= 3
 order by user_id asc
 ```
+
+## Histogram of Users and Purchases
+
+```sql
+-- Error
+select
+  transaction_date,
+  user_id,
+  count(distinct product_id) as purchase_count
+from user_transactions
+group by 1, 2
+order by 1 asc
+```
+
+```sql
+-- Solved
+with rank_txn as (
+    select
+        product_id,
+        user_id,
+        transaction_date,
+        rank() over (partition by user_id order by transaction_date desc) as rank_date
+    from user_transactions
+)
+select
+  transaction_date,
+  user_id,
+  count(product_id) as purchase_count
+from rank_txn
+where rank_date = 1
+group by 1, 2
+```
