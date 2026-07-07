@@ -9,7 +9,7 @@ tags:
 
 ## Progress (Before)
 
-![[data-lemur-progress-snapshot-before@2x.png]]
+![data-lemur-process-before](<../img/data-lemur-img/data-lemur-progress-snapshot-before@2x.png>)
 
 # SQL & Data Interview Questions
 
