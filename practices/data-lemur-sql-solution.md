@@ -1040,3 +1040,25 @@ from rank_txn
 where rank_date = 1
 group by 1, 2
 ```
+
+## Compressed Mode
+
+```sql
+-- Solved
+with mode_cte as (
+  select
+    item_count,
+    order_occurrences,
+    dense_rank() over (order by order_occurrences desc) as mode_rank
+  from items_per_order
+)
+
+select
+  item_count as mode
+from mode_cte
+where mode_rank = 1
+order by item_count asc
+```
+Note: [Alternatively](https://datalemur.com/questions/alibaba-compressed-mode), there are better solutions using `mode()` or `median()` functions.
+
+Tags: window-function, `dense_rank()`, mode, frequency
