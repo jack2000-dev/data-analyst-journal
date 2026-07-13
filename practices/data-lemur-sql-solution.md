@@ -1062,3 +1062,49 @@ order by item_count asc
 Note: [Alternatively](https://datalemur.com/questions/alibaba-compressed-mode), there are better solutions using `mode()` or `median()` functions.
 
 Tags: window-function, `dense_rank()`, mode, frequency
+
+## Card Launch Success
+
+```sql
+-- Error
+with launch_month as (
+  select
+    card_name,
+    issue_month,
+    issue_year,
+    issued_amount,
+    row_number() over (partition by card_name order by issue_month, issue_year) as first_issue_month
+  from monthly_cards_issued
+  group by 1, 2, 3, 4
+)
+
+select
+  card_name,
+  issued_amount
+from launch_month
+where first_issue_month = 1
+order by issued_amount desc
+```
+
+Debug: The error was in `issue_month` and `issue_year`. SQL sorts numerically, sorting by issue_month first means Month 1 (January 2025) will get ranked ahead of Month 12 (December 2024), even though 2024 happened first!
+
+```sql
+-- Solved
+with launch_month as (
+  select
+    card_name,
+    issue_month,
+    issue_year,
+    issued_amount,
+    row_number() over (partition by card_name order by issue_year, issue_month) as first_issue_month
+  from monthly_cards_issued
+  group by 1, 2, 3, 4
+)
+
+select
+  card_name,
+  issued_amount
+from launch_month
+where first_issue_month = 1
+order by issued_amount desc
+```
