@@ -1108,3 +1108,63 @@ from launch_month
 where first_issue_month = 1
 order by issued_amount desc
 ```
+## International Call Percentage
+
+```sql
+-- Error
+with receiver_country as (
+  select
+    i.caller_id,
+    c.receiver_id,
+    country_id
+  from phone_calls c
+  join phone_info i on c.caller_id = i.caller_id
+)
+
+select 
+   count(case when c.)
+from receiver_country r 
+join phone_info i on r.caller_id = i.caller_id
+where r.country_id != i.country_id
+```
+
+Note: This error query was over complicating by try to use CTE to create a table that contain receiver's country code. Which is over-engineer since we can use self-join and alias like below solution. `<>` is the equvilent of `!=` in SQL. And the formula for percentage calculation is `(part * 100) / whole`
+
+```sql
+-- Solved
+select
+  round (
+    count(case when 
+      caller.country_id <> receiver.country_id 
+      then 1 end) * 100.0 / count(*), 1) as international_calls_pct
+from phone_calls c
+join phone_info caller
+  on c.caller_id = caller.caller_id
+join phone_info receiver
+  on c.receiver_id = receiver.caller_id
+```
+
+But if CTE needed we can fix above query into this..
+
+```sql
+-- CTE solution
+WITH international_calls AS (
+SELECT 
+  caller.caller_id, 
+  caller.country_id,
+  receiver.caller_id, 
+  receiver.country_id
+FROM phone_calls AS calls
+LEFT JOIN phone_info AS caller
+  ON calls.caller_id = caller.caller_id
+LEFT JOIN phone_info AS receiver
+  ON calls.receiver_id = receiver.caller_id
+WHERE caller.country_id <> receiver.country_id
+)
+
+SELECT 
+  ROUND(
+    100.0 * COUNT(*)
+  / (SELECT COUNT(*) FROM phone_calls),1) AS international_call_pct
+FROM international_calls;
+```
